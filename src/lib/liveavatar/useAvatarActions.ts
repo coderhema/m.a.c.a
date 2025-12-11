@@ -4,35 +4,35 @@ import { useCallback } from "react";
 import { useLiveAvatarContext } from "./context";
 
 export const useAvatarActions = (mode: "FULL" | "CUSTOM") => {
-  const { sessionRef } = useLiveAvatarContext();
+  const { session } = useLiveAvatarContext();
 
   const interrupt = useCallback(() => {
-    return sessionRef.current?.interrupt();
-  }, [sessionRef]);
+    return session?.interrupt();
+  }, [session]);
 
   const repeat = useCallback(
     async (message: string) => {
       if (mode === "FULL") {
-        return sessionRef.current?.repeat(message);
+        return session?.repeat(message);
       } else if (mode === "CUSTOM") {
         const res = await fetch("/api/elevenlabs-text-to-speech", {
           method: "POST",
           body: JSON.stringify({ text: message }),
         });
         const { audio } = await res.json();
-        return sessionRef.current?.repeatAudio(audio);
+        return session?.repeatAudio(audio);
       }
     },
-    [sessionRef, mode],
+    [session, mode],
   );
 
   const startListening = useCallback(() => {
-    return sessionRef.current?.startListening();
-  }, [sessionRef]);
+    return session?.startListening();
+  }, [session]);
 
   const stopListening = useCallback(() => {
-    return sessionRef.current?.stopListening();
-  }, [sessionRef]);
+    return session?.stopListening();
+  }, [session]);
 
   return {
     interrupt,

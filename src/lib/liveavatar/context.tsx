@@ -1,35 +1,43 @@
 "use client";
 
-import React, { createContext, useContext, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { LiveAvatarSession } from "@heygen/liveavatar-web-sdk";
 
 interface LiveAvatarContextType {
-    sesssionRef: React.MutableRefObject<LiveAvatarSession | null>;
+  session: LiveAvatarSession | null;
 }
 
-const LiveAvatarContext = createContext<LiveAvatarContextType | undefined>;
+const LiveAvatarContext = createContext<LiveAvatarContextType | undefined>(undefined);
 
 export const LiveAvatarContextProvider: React.FC<{
-    children: React.ReactNode;
-    sessionAccessToken: string;
+  children: React.ReactNode;
+  sessionAccessToken?: string | null;
 }> = ({ children, sessionAccessToken }) => {
-    const sessionRef = useRef<LiveAvatarSession | null>(null);
+  const [session, setSession] = useState<LiveAvatarSession | null>(null);
 
-    if (!sessionRef.current) {
-        sessionRef.current = new LiveAvatarSession(sessionAccessToken);
+  useEffect(() => {
+    if (!sessionAccessToken) {
+      setSession(null);
+      return;
     }
+    const newSession = new LiveAvatarSession(sessionAccessToken);
+    setSession(newSession);
+    return () => {
+      setSession(null);
+    };
+  }, [sessionAccessToken]);
 
-    return (
-        <LiveAvatarContext.Provider value={{ sessionRef }}>
-            {children}
-        </LiveAvatarContext.Provider>
-    );
+  return (
+    <LiveAvatarContext.Provider value={{ session }}>
+      {children}
+    </LiveAvatarContext.Provider>
+  );
 };
 
-export const useLiveAvatarSession = () => {
-    const context = useContext(LiveAvatarContext);
-    if (context === undefined) {
-        throw new Error("useLiveAvatarContext must be used within a LiveAvatarContextProvider");
-    }
-    return context;
+export const useLiveAvatarContext = () => {
+  const context = useContext(LiveAvatarContext);
+  if (context === undefined) {
+    throw new Error("useLiveAvatarContext must be used within a LiveAvatarContextProvider");
+  }
+  return context;
 };

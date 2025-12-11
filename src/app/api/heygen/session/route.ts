@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const apiKey = process.env.HEYGEN_API_KEY;
+  const apiKey = process.env.HEYGEN_API_KEY?.replace(/\s/g, "");
   const avatarId = process.env.HEYGEN_AVATAR_ID;
   const voiceId = process.env.HEYGEN_VOICE_ID;
+
+
 
   if (!apiKey) {
     return NextResponse.json(

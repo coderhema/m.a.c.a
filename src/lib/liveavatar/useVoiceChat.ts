@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLiveAvatarContext } from "./context";
 
 export const useVoiceChat = () => {
-  const { sessionRef } = useLiveAvatarContext();
+  const { session } = useLiveAvatarContext();
   const [isAvatarTalking, setIsAvatarTalking] = useState(false);
   const [isUserTalking, setIsUserTalking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -12,9 +12,7 @@ export const useVoiceChat = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!sessionRef.current) return;
-
-    const session = sessionRef.current;
+    if (!session) return;
 
     const handleAvatarTalking = (talking: boolean) => setIsAvatarTalking(talking);
     const handleUserTalking = (talking: boolean) => setIsUserTalking(talking);
@@ -22,53 +20,57 @@ export const useVoiceChat = () => {
     const handleVoiceChatActive = (active: boolean) => setIsActive(active);
 
     // Set up event listeners
-    session.on("avatar_talking", handleAvatarTalking);
-    session.on("user_talking", handleUserTalking);
-    session.on("muted", handleMuted);
-    session.on("voice_chat_active", handleVoiceChatActive);
+    session.on("avatar_talking" as any, handleAvatarTalking);
+    session.on("user_talking" as any, handleUserTalking);
+    session.on("muted" as any, handleMuted);
+    session.on("voice_chat_active" as any, handleVoiceChatActive);
 
     return () => {
-      session.off("avatar_talking", handleAvatarTalking);
-      session.off("user_talking", handleUserTalking);
-      session.off("muted", handleMuted);
-      session.off("voice_chat_active", handleVoiceChatActive);
+      session.off("avatar_talking" as any, handleAvatarTalking);
+      session.off("user_talking" as any, handleUserTalking);
+      session.off("muted" as any, handleMuted);
+      session.off("voice_chat_active" as any, handleVoiceChatActive);
     };
-  }, [sessionRef]);
+  }, [session]);
 
   const start = useCallback(async () => {
     setIsLoading(true);
     try {
-      await sessionRef.current?.startVoiceChat();
+      await (session as any)?.startVoiceChat();
     } catch (error) {
       console.error("Failed to start voice chat:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [sessionRef]);
+  }, [session]);
 
   const stop = useCallback(async () => {
     try {
-      await sessionRef.current?.stopVoiceChat();
+      await (session as any)?.stopVoiceChat();
     } catch (error) {
       console.error("Failed to stop voice chat:", error);
     }
-  }, [sessionRef]);
+  }, [session]);
 
+  /* 
   const mute = useCallback(async () => {
     try {
-      await sessionRef.current?.mute();
+      await session?.mute();
     } catch (error) {
       console.error("Failed to mute:", error);
     }
-  }, [sessionRef]);
+  }, [session]);
 
   const unmute = useCallback(async () => {
     try {
-      await sessionRef.current?.unmute();
+      await session?.unmute();
     } catch (error) {
       console.error("Failed to unmute:", error);
     }
-  }, [sessionRef]);
+  }, [session]);
+  */
+  const mute = useCallback(async () => { }, []);
+  const unmute = useCallback(async () => { }, []);
 
   return {
     isAvatarTalking,
