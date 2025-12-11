@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PiArrowLeft , PiDotsThree , PiCheck , PiKeyboard , PiPaperPlaneTilt , PiMicrophoneSlash , PiVideoCamera , PiCameraRotate , PiPhoneX , PiWifiHigh   } from "react-icons/pi";
 
 export default function Home() {
   return (
@@ -19,15 +20,55 @@ export default function Home() {
       </div>
 
       {/* Top Header / Status Bar */}
-      <div className="relative z-10 flex flex-col p-4 pt-6 space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-start md:p-8">
-        {/* Nav Bar (Mobile) / Branding (Desktop) */}
-        <div className="flex items-center justify-between md:gap-4">
-          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors">
-            <span className="material-symbols-outlined text-[24px]">
-              arrow_back_ios_new
-            </span>
+      <div className="relative z-10 flex flex-col p-4 pt-6 space-y-4 md:space-y-0 md:flex-row md:items-start md:p-8">
+        <div className="flex items-center gap-4">
+          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors" aria-label="Go back">
+            <PiArrowLeft className="text-[24px]" />
           </button>
 
+          {/* Doctor Info Card - Now side-by-side with the back button */}
+          <div className="flex items-center justify-between bg-background-dark/80 backdrop-blur-xl border border-white/5 p-3 rounded-lg shadow-lg md:min-w-[300px]">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div
+                  className="size-10 rounded-full bg-cover bg-center ring-2 ring-primary/50"
+                  data-alt="Avatar icon of AI medical assistant"
+                  style={{
+                    backgroundImage:
+                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdAjt4OtnBnUv5EFOqHBGMGhC4sfFg5psO2vCpVBEzjtkYqYI35f_ZX11qQehoC0FfREUkUvwhgGGhucxSLuudsoeERShYRZ1BRuTnmmGZbitWvBuekcwC_SznbRk4vqfSSXFgdzq7p1Kq6zz8HnphohgGyFl0QFqhHUq2W52_rJ5ukfJzbbmIGNDKBSZq-ltPA2TxUYyTjbiJIpK9r2x_nhF6dWqwsz6sxWGySPazTmuF2NF3SeSvaxtOZ7lgxuBH7L8Vwx3gc4FC")',
+                  }}
+                ></div>
+                <div className="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-[2px]">
+                  <PiCheck className="text-primary text-[14px] font-bold" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-white text-sm font-bold leading-tight">
+                  Dr. Sarah AI
+                </h3>
+                <p className="text-gray-400 text-xs font-normal">
+                  General Practitioner • 04:23
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-1 md:hidden">
+              <PiWifiHigh className="text-primary text-[20px]" />
+            </div>
+            {/* Desktop Status Tag */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 ml-4 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              <span className="text-xs font-medium text-primary tracking-wide uppercase">
+                Live
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* More options button - On the far right */}
+        <div className="flex items-center md:gap-4 md:ml-auto">
           {/* Mobile Status Tag */}
           <div className="flex flex-col items-center md:hidden">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
@@ -41,55 +82,9 @@ export default function Home() {
             </div>
           </div>
 
-          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors md:hidden">
-            <span className="material-symbols-outlined text-[24px]">
-              more_vert
-            </span>
+          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors md:hidden" aria-label="More options">
+            <PiDotsThree className="text-[24px]" />
           </button>
-        </div>
-
-        {/* Doctor Info Card */}
-        <div className="flex items-center justify-between bg-background-dark/80 backdrop-blur-xl border border-white/5 p-3 rounded-lg mx-2 shadow-lg md:mx-0 md:min-w-[300px]">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div
-                className="size-10 rounded-full bg-cover bg-center ring-2 ring-primary/50"
-                data-alt="Avatar icon of AI medical assistant"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdAjt4OtnBnUv5EFOqHBGMGhC4sfFg5psO2vCpVBEzjtkYqYI35f_ZX11qQehoC0FfREUkUvwhgGGhucxSLuudsoeERShYRZ1BRuTnmmGZbitWvBuekcwC_SznbRk4vqfSSXFgdzq7p1Kq6zz8HnphohgGyFl0QFqhHUq2W52_rJ5ukfJzbbmIGNDKBSZq-ltPA2TxUYyTjbiJIpK9r2x_nhF6dWqwsz6sxWGySPazTmuF2NF3SeSvaxtOZ7lgxuBH7L8Vwx3gc4FC")',
-                }}
-              ></div>
-              <div className="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-[2px]">
-                <span className="material-symbols-outlined text-primary text-[14px] font-bold">
-                  verified
-                </span>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-white text-sm font-bold leading-tight">
-                Dr. Sarah AI
-              </h3>
-              <p className="text-gray-400 text-xs font-normal">
-                General Practitioner • 04:23
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-1 md:hidden">
-            <span className="material-symbols-outlined text-primary text-[20px]">
-              signal_cellular_alt
-            </span>
-          </div>
-          {/* Desktop Status Tag */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 ml-4 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span className="text-xs font-medium text-primary tracking-wide uppercase">
-              Live
-            </span>
-          </div>
         </div>
       </div>
 
@@ -105,25 +100,6 @@ export default function Home() {
                 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNtQNfOorGdqTpzvKT_ah3Hh2GeWORFSvN5FtOYSX2ShdBs7d0O0pfCtQTbfEmGBPuqxwdRMl2WUw2CQhWTW_hoCBwjrOmXo-nNbyD7NEioxD2J0W-TSLF7INkxyxpjI6Gdo_9luk4NuPRR2c_gRLWmCLb6J-97cBEH7l3OPoNWwGLiBK1eVc7SIOXrXTFjDPPu8DV2xFH2PsNpqLvj0USm2xSDMH5PdxqrJsS6Q9-FNaMjkgp0EXQQWfw-k-Mh-JW7gUvOZEPaXbv")',
             }}
           ></div>
-        </div>
-
-        {/* Chat / Transcript Bubble */}
-        <div className="flex flex-col items-start space-y-3 mb-6 md:mb-12 md:max-w-xl lg:max-w-2xl w-full">
-          {/* AI Message */}
-          <div className="max-w-[85%] md:max-w-full self-start animate-fade-in-up">
-            <div className="flex items-center gap-2 mb-1 pl-2">
-              <span className="text-primary text-xs font-semibold">
-                Dr. Sarah AI
-              </span>
-            </div>
-            <div className="p-4 md:p-6 rounded-2xl rounded-tl-sm bg-background-dark/90 backdrop-blur-md border border-white/10 text-white shadow-lg">
-              <p className="text-sm md:text-base leading-relaxed font-normal">
-                I&apos;ve reviewed your heart rate data. It looks slightly
-                elevated. Have you been experiencing any dizziness or shortness
-                of breath lately?
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -141,14 +117,10 @@ export default function Home() {
               placeholder="Type your symptoms..."
               type="text"
             />
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
-              keyboard
-            </span>
+            <PiKeyboard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" />
           </label>
-          <button className="flex items-center justify-center size-12 rounded-full bg-primary hover:bg-primary/90 text-background-dark transition-transform active:scale-95 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-[24px] font-medium -ml-0.5 mt-0.5">
-              send
-            </span>
+          <button className="flex items-center justify-center size-12 rounded-full bg-primary hover:bg-primary/90 text-background-dark transition-transform active:scale-95 shadow-lg shadow-primary/20" aria-label="Send message">
+            <PiPaperPlaneTilt className="text-[24px] font-medium -ml-0.5 mt-0.5" />
           </button>
         </div>
 
@@ -157,12 +129,10 @@ export default function Home() {
           {/* Mute Toggle */}
           <button className="flex flex-col items-center gap-1 group">
             <div className="flex items-center justify-center size-14 rounded-full bg-white/10 group-hover:bg-white/20 text-white transition-all active:scale-95">
-              <span
-                className="material-symbols-outlined text-[28px]"
+              <PiMicrophoneSlash 
+                className="text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 0" }}
-              >
-                mic_off
-              </span>
+              />
             </div>
             <span className="text-[10px] text-gray-400 font-medium md:hidden">Mute</span>
           </button>
@@ -170,12 +140,10 @@ export default function Home() {
           {/* Camera Toggle */}
           <button className="flex flex-col items-center gap-1 group">
             <div className="flex items-center justify-center size-14 rounded-full bg-white/10 group-hover:bg-white/20 text-white transition-all active:scale-95">
-              <span
-                className="material-symbols-outlined text-[28px]"
+              <PiVideoCamera 
+                className="text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 0" }}
-              >
-                videocam
-              </span>
+              />
             </div>
             <span className="text-[10px] text-gray-400 font-medium md:hidden">Camera</span>
           </button>
@@ -183,12 +151,10 @@ export default function Home() {
           {/* Flip Camera */}
           <button className="flex flex-col items-center gap-1 group">
             <div className="flex items-center justify-center size-14 rounded-full bg-white/10 group-hover:bg-white/20 text-white transition-all active:scale-95">
-              <span
-                className="material-symbols-outlined text-[28px]"
+              <PiCameraRotate 
+                className="text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 0" }}
-              >
-                flip_camera_ios
-              </span>
+              />
             </div>
             <span className="text-[10px] text-gray-400 font-medium md:hidden">Flip</span>
           </button>
@@ -196,12 +162,10 @@ export default function Home() {
           {/* End Call */}
           <button className="flex flex-col items-center gap-1 group">
             <div className="flex items-center justify-center size-14 rounded-full bg-red-500/90 group-hover:bg-red-500 text-white shadow-lg shadow-red-500/30 transition-all active:scale-95">
-              <span
-                className="material-symbols-outlined text-[28px]"
+              <PiPhoneX 
+                className="text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                call_end
-              </span>
+              />
             </div>
             <span className="text-[10px] text-red-400 font-medium md:hidden">End</span>
           </button>

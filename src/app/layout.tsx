@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Script from "next/script";
+
 
 export const metadata: Metadata = {
-  title: "Dr. AI Assistant Video Call",
-  description: "Dr. AI Video Call Interface",
+  title: "M.A.C.A",
+  description: "M.A.C.A. is a healthcare consultation platform",
 };
 
 export default function RootLayout({
@@ -14,6 +16,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+          {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
         <link
           href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
@@ -22,6 +31,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        
       </head>
       <body className="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden h-screen w-full select-none">
         {children}
