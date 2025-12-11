@@ -1,21 +1,13 @@
 import Image from "next/image";
-import { PiArrowLeft , PiDotsThree , PiCheck , PiKeyboard , PiPaperPlaneTilt , PiMicrophoneSlash , PiVideoCamera , PiCameraRotate , PiPhoneX , PiWifiHigh   } from "react-icons/pi";
+import { PiArrowLeft, PiDotsThree, PiCheck, PiKeyboard, PiPaperPlaneTilt, PiMicrophoneSlash, PiVideoCamera, PiCameraRotate, PiPhoneX, PiWifiHigh } from "react-icons/pi";
 
 export default function Home() {
   return (
     <div className="relative flex flex-col h-full w-full md:max-w-full md:mx-0 max-w-md mx-auto bg-black overflow-hidden shadow-2xl">
       {/* Video Feed Background */}
       <div className="absolute inset-0 z-0 bg-gray-900">
-        {/* Main AI Video */}
-        <div
-          className="w-full h-full bg-cover bg-center object-cover opacity-90"
-          data-alt="Professional female doctor with stethoscope in a modern medical office looking at camera"
-          style={{
-            backgroundImage:
-              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOp-A0wBfbdABCseJhRQ7pK22D9gTiJ7dPYaThHDwh_mQIQpCJedmWcbvQbEl4Br7OchS0HN0PW4VqksQCEetomr5MFK24QKfYInoMOq1qqeMojgb5oQZ7aXDId19InnBx7CHatyaoyNJx5IcSfzxi3ERfwtJq5jXtZtTb4On0XmR5AolcDmAeeo8cosYNQbqHFOyMjSCiYoKywYag8jr0LeAPbof0FzCsfoQNq7CpRmlKeV2TcEiUfQhqomfIQj5F6P4e-vqJjNrv")',
-          }}
-        ></div>
         {/* Gradient Overlay for Text Readability */}
+
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90 pointer-events-none"></div>
       </div>
 
@@ -26,22 +18,10 @@ export default function Home() {
             <PiArrowLeft className="text-[24px]" />
           </button>
 
-          {/* Doctor Info Card - Now side-by-side with the back button */}
-          <div className="flex items-center justify-between bg-background-dark/80 backdrop-blur-xl border border-white/5 p-3 rounded-lg shadow-lg md:min-w-[300px]">
+          {/* Doctor Info Card - Removed profile picture, made background black */}
+          <div className="flex items-center justify-between bg-black backdrop-blur-xl border border-white/5 p-3 rounded-lg shadow-lg md:min-w-[300px]">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div
-                  className="size-10 rounded-full bg-cover bg-center ring-2 ring-primary/50"
-                  data-alt="Avatar icon of AI medical assistant"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdAjt4OtnBnUv5EFOqHBGMGhC4sfFg5psO2vCpVBEzjtkYqYI35f_ZX11qQehoC0FfREUkUvwhgGGhucxSLuudsoeERShYRZ1BRuTnmmGZbitWvBuekcwC_SznbRk4vqfSSXFgdzq7p1Kq6zz8HnphohgGyFl0QFqhHUq2W52_rJ5ukfJzbbmIGNDKBSZq-ltPA2TxUYyTjbiJIpK9r2x_nhF6dWqwsz6sxWGySPazTmuF2NF3SeSvaxtOZ7lgxuBH7L8Vwx3gc4FC")',
-                  }}
-                ></div>
-                <div className="absolute -bottom-1 -right-1 bg-background-dark rounded-full p-[2px]">
-                  <PiCheck className="text-primary text-[14px] font-bold" />
-                </div>
-              </div>
+              {/* Removed profile picture div */}
               <div>
                 <h3 className="text-white text-sm font-bold leading-tight">
                   Dr. Sarah AI
@@ -67,7 +47,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* More options button - On the far right */}
+        {/* More options button - On the far right, visible on all screen sizes */}
         <div className="flex items-center md:gap-4 md:ml-auto">
           {/* Mobile Status Tag */}
           <div className="flex flex-col items-center md:hidden">
@@ -82,25 +62,15 @@ export default function Home() {
             </div>
           </div>
 
-          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors md:hidden" aria-label="More options">
+          <button className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors" aria-label="More options">
             <PiDotsThree className="text-[24px]" />
           </button>
         </div>
       </div>
 
-      {/* Middle Section */}
+      {/* Middle Section - Removed self-view picture-in-picture */}
       <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-start md:justify-center">
-        {/* Self View (Picture-in-Picture) */}
-        <div className="absolute top-4 right-4 w-24 h-32 md:w-48 md:h-64 md:top-8 md:right-8 rounded-lg overflow-hidden shadow-2xl border-2 border-white/20 bg-gray-800 transition-all">
-          <div
-            className="w-full h-full bg-cover bg-center"
-            data-alt="User looking at phone camera for video call"
-            style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNtQNfOorGdqTpzvKT_ah3Hh2GeWORFSvN5FtOYSX2ShdBs7d0O0pfCtQTbfEmGBPuqxwdRMl2WUw2CQhWTW_hoCBwjrOmXo-nNbyD7NEioxD2J0W-TSLF7INkxyxpjI6Gdo_9luk4NuPRR2c_gRLWmCLb6J-97cBEH7l3OPoNWwGLiBK1eVc7SIOXrXTFjDPPu8DV2xFH2PsNpqLvj0USm2xSDMH5PdxqrJsS6Q9-FNaMjkgp0EXQQWfw-k-Mh-JW7gUvOZEPaXbv")',
-            }}
-          ></div>
-        </div>
+        {/* Removed Self View (Picture-in-Picture) */}
       </div>
 
       {/* Bottom Controls Section */}
@@ -109,20 +79,7 @@ export default function Home() {
         {/* Drag Handle (Mobile Only) */}
         <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 md:hidden"></div>
 
-        {/* Input Field */}
-        <div className="flex items-center gap-2 bg-background-dark/90 backdrop-blur-xl p-2 rounded-full border border-white/10 shadow-xl">
-          <label className="flex-1 relative group">
-            <input
-              className="w-full h-12 pl-12 pr-4 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
-              placeholder="Type your symptoms..."
-              type="text"
-            />
-            <PiKeyboard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" />
-          </label>
-          <button className="flex items-center justify-center size-12 rounded-full bg-primary hover:bg-primary/90 text-background-dark transition-transform active:scale-95 shadow-lg shadow-primary/20" aria-label="Send message">
-            <PiPaperPlaneTilt className="text-[24px] font-medium -ml-0.5 mt-0.5" />
-          </button>
-        </div>
+        {/* Removed Input Field (Chat Area) */}
 
         {/* Call Controls */}
         <div className="flex items-center justify-between px-2 pt-2 md:justify-center md:gap-8 md:bg-black/40 md:backdrop-blur-xl md:p-3 md:rounded-full md:border md:border-white/10 md:w-fit md:mx-auto">
