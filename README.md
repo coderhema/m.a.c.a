@@ -1,4 +1,4 @@
-# MACA
+# MACA: Medical AI Conversational Assistant
 
 clone repository
 
