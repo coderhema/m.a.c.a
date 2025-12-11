@@ -7,7 +7,7 @@ export default function Header() {
       <div className="relative z-10 flex flex-col p-4 pt-6 space-y-4 md:space-y-0 md:flex-row md:items-start md:p-8">
         <div className="flex items-center gap-4">
           <button 
-            className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors" 
+            className="flex items-center justify-center size-10 rounded-full bg-black backdrop-blur-xl border-white/5 text-white hover:bg-white/20 transition-colors" 
             aria-label="Go back"
           >
             <PiArrowLeft className="text-[24px]" />
@@ -15,7 +15,7 @@ export default function Header() {
 
           {/* Doctor Info Card */}
           <div className="flex items-center justify-between bg-black backdrop-blur-xl border border-white/5 p-3 rounded-lg shadow-lg md:min-w-[300px]">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-5 pl-3">
               <div>
                 <h3 className="text-white text-sm font-bold leading-tight">
                   Dr. Sarah AI
@@ -57,7 +57,7 @@ export default function Header() {
           </div>
 
           <button 
-            className="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-colors" 
+            className="flex items-center justify-center size-10 rounded-full bg-black backdrop-blur-xl border-white/5 text-white hover:bg-white/20 transition-colors" 
             aria-label="More options"
           >
             <PiDotsThree className="text-[24px]" />
