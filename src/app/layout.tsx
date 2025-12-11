@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
 
-
 export const metadata: Metadata = {
-  title: "M.A.C.A",
-  description: "M.A.C.A. is a healthcare consultation platform",
+  title: "M.A.C.A - Medical AI Consultation Assistant",
+  description: "M.A.C.A. is a healthcare consultation platform connecting patients with AI-powered medical professionals",
 };
 
 export default function RootLayout({
@@ -16,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-          {process.env.NODE_ENV === "development" && (
+        {process.env.NODE_ENV === "development" && (
           <Script
             src="//unpkg.com/react-grab/dist/index.global.js"
             crossOrigin="anonymous"
@@ -31,7 +30,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
-        
       </head>
       <body className="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden h-screen w-full select-none">
         {children}
