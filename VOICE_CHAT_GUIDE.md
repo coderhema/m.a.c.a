@@ -189,12 +189,14 @@ const voiceChat = useVoiceChat({
 
 
 
+
 1. User clicks "Start Recording"
 2. Browser captures microphone audio
 3. User clicks "Stop Recording"
 4. **STT**: Audio sent to `/api/stt` → transcribed to text
 5. **LLM**: Text sent to `/api/chat` → Gemini generates response
-6. **TTS**: Response sent to `/api/tts` → YarnGPT creates audio
+6. **TTS**: Response sent to `/api/tts` → YarnG
+7. PT creates audio
 7. **Avatar**: Audio sent to LiveAvatar → avatar speaks
 
 ## Error Handling

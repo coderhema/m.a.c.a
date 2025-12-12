@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Room } from "livekit-client";
-import { sendAudioToAvatar } from "@/lib/liveavatar-livekit/customModeUtils";
+import { sendAudioToAvatar, startAvatarListening, stopAvatarListening } from "@/lib/liveavatar-livekit/customModeUtils";
 import { log } from "@/lib/logger";
 
 interface VoiceChatOptions {
@@ -220,6 +220,13 @@ export function useVoiceChat(options: VoiceChatOptions) {
   const startRecording = useCallback(async () => {
     try {
       log.info("=== RECORDING START ===");
+      
+      // Signal avatar to start listening
+      if (room) {
+        log.info("Notifying avatar to start listening...");
+        await startAvatarListening(room);
+      }
+      
       log.info("Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
@@ -254,6 +261,12 @@ export function useVoiceChat(options: VoiceChatOptions) {
           totalSizeKB: (totalSize / 1024).toFixed(2) + "KB"
         });
         
+        // Signal avatar to stop listening
+        if (room) {
+          log.info("Notifying avatar to stop listening...");
+          await stopAvatarListening(room);
+        }
+        
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
@@ -275,9 +288,13 @@ export function useVoiceChat(options: VoiceChatOptions) {
       log.info("Voice recording active - speak now!");
     } catch (error) {
       log.error("Failed to start recording", error);
+      // Try to stop listening state on error
+      if (room) {
+        await stopAvatarListening(room).catch(() => {});
+      }
       onError?.(error instanceof Error ? error : new Error("Microphone access denied"));
     }
-  }, [processVoiceInput, onError]);
+  }, [room, processVoiceInput, onError]);
 
   /**
    * Stop recording user's voice

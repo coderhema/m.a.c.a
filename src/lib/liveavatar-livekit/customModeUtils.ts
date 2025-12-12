@@ -4,57 +4,46 @@ import { Room } from "livekit-client";
 import { log } from "@/lib/logger";
 
 /**
- * In CUSTOM mode, you send audio to the avatar and it generates video.
- * This utility helps send audio data to the LiveAvatar via LiveKit data channel.
+ * LiveAvatar Custom Mode Events
+ * Audio must be PCM 16Bit 24KHz encoded as Base64
  */
 
-export interface AudioMessage {
-  type: "audio";
-  audio: string; // Base64 encoded audio data
-  format?: "pcm" | "wav" | "mp3"; // Audio format
-  sampleRate?: number; // Sample rate in Hz
+// LiveAvatar Custom Mode event types
+export interface AgentSpeakEvent {
+  type: "agent.speak";
+  audio: string; // Base64 encoded PCM 16Bit 24KHz audio
+  event_id?: string;
 }
 
+export interface AgentSpeakEndEvent {
+  type: "agent.speak_end";
+  event_id?: string;
+}
+
+export interface AgentInterruptEvent {
+  type: "agent.interrupt";
+}
+
+export interface AgentListeningEvent {
+  type: "agent.start_listening" | "agent.stop_listening";
+  event_id?: string;
+}
+
+export interface SessionKeepAliveEvent {
+  type: "session.keep_alive";
+  event_id?: string;
+}
+
+type LiveAvatarEvent = AgentSpeakEvent | AgentSpeakEndEvent | AgentInterruptEvent | AgentListeningEvent | SessionKeepAliveEvent;
+
 /**
- * Send audio data to the LiveAvatar for video generation
- * @param room - LiveKit room instance
- * @param audioData - Audio data as ArrayBuffer, Blob, or base64 string
- * @param options - Audio format options
+ * Send a LiveAvatar event via LiveKit data channel
  */
-export async function sendAudioToAvatar(
-  room: Room,
-  audioData: ArrayBuffer | Blob | string,
-  options: {
-    format?: "pcm" | "wav" | "mp3";
-    sampleRate?: number;
-  } = {}
-): Promise<void> {
-  log.debug("Sending audio to avatar", { format: options.format, sampleRate: options.sampleRate });
-  let base64Audio: string;
-
-  // Convert audio data to base64
-  if (typeof audioData === "string") {
-    base64Audio = audioData;
-  } else if (audioData instanceof Blob) {
-    const arrayBuffer = await audioData.arrayBuffer();
-    base64Audio = arrayBufferToBase64(arrayBuffer);
-  } else {
-    base64Audio = arrayBufferToBase64(audioData);
-  }
-
-  // Create audio message
-  const message: AudioMessage = {
-    type: "audio",
-    audio: base64Audio,
-    format: options.format || "pcm",
-    sampleRate: options.sampleRate || 16000,
-  };
-
-  // Send via data channel
+async function sendEvent(room: Room, event: LiveAvatarEvent): Promise<void> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(message));
+  const data = encoder.encode(JSON.stringify(event));
   await room.localParticipant?.publishData(data, { reliable: true });
-  log.debug("Audio sent successfully", { dataSize: data.length });
+  log.debug("Event sent", { type: event.type, dataSize: data.length });
 }
 
 /**
@@ -63,10 +52,206 @@ export async function sendAudioToAvatar(
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  // Process in chunks to avoid call stack issues with large arrays
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.byteLength; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.byteLength));
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
   }
   return btoa(binary);
+}
+
+/**
+ * Extract PCM data from WAV file
+ * WAV format: 44-byte header followed by PCM data
+ */
+function extractPCMFromWav(wavBuffer: ArrayBuffer): ArrayBuffer {
+  const view = new DataView(wavBuffer);
+  
+  // Verify RIFF header
+  const riff = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
+  if (riff !== "RIFF") {
+    log.warn("Not a valid WAV file, sending as-is");
+    return wavBuffer;
+  }
+  
+  // Find "data" chunk
+  let offset = 12; // Skip RIFF header
+  while (offset < wavBuffer.byteLength - 8) {
+    const chunkId = String.fromCharCode(
+      view.getUint8(offset),
+      view.getUint8(offset + 1),
+      view.getUint8(offset + 2),
+      view.getUint8(offset + 3)
+    );
+    const chunkSize = view.getUint32(offset + 4, true);
+    
+    if (chunkId === "data") {
+      // Found data chunk, extract PCM
+      const pcmStart = offset + 8;
+      const pcmData = wavBuffer.slice(pcmStart, pcmStart + chunkSize);
+      log.debug("Extracted PCM from WAV", { 
+        wavSize: wavBuffer.byteLength, 
+        pcmSize: pcmData.byteLength,
+        headerSize: pcmStart 
+      });
+      return pcmData;
+    }
+    
+    offset += 8 + chunkSize;
+  }
+  
+  log.warn("Could not find data chunk in WAV, sending as-is");
+  return wavBuffer;
+}
+
+/**
+ * Send audio data to the LiveAvatar for video generation
+ * LiveAvatar requires PCM 16Bit 24KHz audio encoded as Base64
+ * 
+ * @param room - LiveKit room instance
+ * @param audioData - Audio data as ArrayBuffer or Blob (WAV format will be converted to PCM)
+ * @param options - Audio format options
+ */
+export async function sendAudioToAvatar(
+  room: Room,
+  audioData: ArrayBuffer | Blob | string,
+  options: {
+    format?: "pcm" | "wav" | "mp3";
+    sampleRate?: number;
+    eventId?: string;
+  } = {}
+): Promise<void> {
+  const eventId = options.eventId || crypto.randomUUID();
+  log.info("[AVATAR] Preparing audio for LiveAvatar", { 
+    format: options.format, 
+    sampleRate: options.sampleRate,
+    eventId 
+  });
+
+  let pcmBuffer: ArrayBuffer;
+
+  // Convert to ArrayBuffer first
+  if (typeof audioData === "string") {
+    // Assume already base64 PCM
+    const binaryString = atob(audioData);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    pcmBuffer = bytes.buffer;
+  } else if (audioData instanceof Blob) {
+    const arrayBuffer = await audioData.arrayBuffer();
+    // If WAV format, extract PCM data
+    if (options.format === "wav") {
+      pcmBuffer = extractPCMFromWav(arrayBuffer);
+    } else {
+      pcmBuffer = arrayBuffer;
+    }
+  } else {
+    if (options.format === "wav") {
+      pcmBuffer = extractPCMFromWav(audioData);
+    } else {
+      pcmBuffer = audioData;
+    }
+  }
+
+  // Convert to base64
+  const base64Audio = arrayBufferToBase64(pcmBuffer);
+  
+  log.info("[AVATAR] Sending audio", { 
+    pcmSize: pcmBuffer.byteLength,
+    pcmSizeKB: (pcmBuffer.byteLength / 1024).toFixed(2) + "KB",
+    base64Length: base64Audio.length
+  });
+
+  // Send audio in chunks if too large (LiveAvatar recommends small packets)
+  const MAX_CHUNK_SIZE = 500000; // 500KB base64 chunks
+  
+  if (base64Audio.length > MAX_CHUNK_SIZE) {
+    log.info("[AVATAR] Audio too large, sending in chunks", { 
+      totalSize: base64Audio.length,
+      chunkSize: MAX_CHUNK_SIZE 
+    });
+    
+    for (let i = 0; i < base64Audio.length; i += MAX_CHUNK_SIZE) {
+      const chunk = base64Audio.slice(i, i + MAX_CHUNK_SIZE);
+      const chunkNum = Math.floor(i / MAX_CHUNK_SIZE) + 1;
+      const totalChunks = Math.ceil(base64Audio.length / MAX_CHUNK_SIZE);
+      
+      log.debug(`[AVATAR] Sending chunk ${chunkNum}/${totalChunks}`);
+      
+      await sendEvent(room, {
+        type: "agent.speak",
+        audio: chunk,
+        event_id: eventId,
+      });
+      
+      // Small delay between chunks
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  } else {
+    // Send as single message
+    await sendEvent(room, {
+      type: "agent.speak",
+      audio: base64Audio,
+      event_id: eventId,
+    });
+  }
+
+  // Signal end of speaking
+  await sendEvent(room, {
+    type: "agent.speak_end",
+    event_id: eventId,
+  });
+
+  log.info("[AVATAR] Audio sent successfully", { eventId });
+}
+
+/**
+ * Start avatar listening state
+ */
+export async function startAvatarListening(room: Room): Promise<void> {
+  const eventId = crypto.randomUUID();
+  log.info("[AVATAR] Starting listening state", { eventId });
+  await sendEvent(room, {
+    type: "agent.start_listening",
+    event_id: eventId,
+  });
+}
+
+/**
+ * Stop avatar listening state
+ */
+export async function stopAvatarListening(room: Room): Promise<void> {
+  const eventId = crypto.randomUUID();
+  log.info("[AVATAR] Stopping listening state", { eventId });
+  await sendEvent(room, {
+    type: "agent.stop_listening",
+    event_id: eventId,
+  });
+}
+
+/**
+ * Interrupt avatar (stop current speech)
+ */
+export async function interruptAvatar(room: Room): Promise<void> {
+  log.info("[AVATAR] Sending interrupt");
+  await sendEvent(room, {
+    type: "agent.interrupt",
+  });
+}
+
+/**
+ * Keep session alive
+ */
+export async function keepSessionAlive(room: Room): Promise<void> {
+  const eventId = crypto.randomUUID();
+  log.debug("[AVATAR] Sending keep-alive", { eventId });
+  await sendEvent(room, {
+    type: "session.keep_alive",
+    event_id: eventId,
+  });
 }
 
 /**

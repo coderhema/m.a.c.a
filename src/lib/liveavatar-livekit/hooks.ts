@@ -3,6 +3,7 @@
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useCallback, useState } from "react";
 import { log } from "@/lib/logger";
+import { interruptAvatar, keepSessionAlive, startAvatarListening, stopAvatarListening } from "./customModeUtils";
 
 export const useVoiceChatLiveKit = () => {
   const { localParticipant } = useLocalParticipant();
@@ -67,9 +68,11 @@ export const useSessionLiveKit = () => {
   }, [room]);
 
   const keepAlive = useCallback(async () => {
-    // LiveKit automatically handles connection keep-alive
-    log.debug("Keep alive (handled automatically by LiveKit)");
-  }, []);
+    if (room) {
+      log.debug("Sending keep-alive to LiveAvatar");
+      await keepSessionAlive(room);
+    }
+  }, [room]);
 
   return {
     stopSession,
@@ -82,17 +85,27 @@ export const useAvatarActionsLiveKit = () => {
   const room = useRoomContext();
 
   const interrupt = useCallback(async () => {
-    // Send interrupt signal via data channel
     if (room) {
-      log.debug("Sending interrupt signal to avatar");
-      const encoder = new TextEncoder();
-      const data = encoder.encode(JSON.stringify({ action: "interrupt" }));
-      await room.localParticipant?.publishData(data, { reliable: true });
-      log.debug("Interrupt signal sent");
+      log.info("Interrupting avatar");
+      await interruptAvatar(room);
+    }
+  }, [room]);
+
+  const startListening = useCallback(async () => {
+    if (room) {
+      await startAvatarListening(room);
+    }
+  }, [room]);
+
+  const stopListening = useCallback(async () => {
+    if (room) {
+      await stopAvatarListening(room);
     }
   }, [room]);
 
   return {
     interrupt,
+    startListening,
+    stopListening,
   };
 };
