@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "validate-env": "node scripts/validate-env.js"
   },
   "dependencies": {
     "@heygen/liveavatar-web-sdk": "^0.0.9",

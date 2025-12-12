@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/app/components";
 import { BottomControls } from "@/app/components";
 import { LiveAvatarSession } from "@/app/components";
 import { LiveAvatarContextProvider } from "@/lib/liveavatar";
 
-
 export default function HealthDashboard() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [envError, setEnvError] = useState<string | null>(null);
+
+  // Check for required environment variables on component mount
+  useEffect(() => {
+    const checkEnvVariables = () => {
+      const requiredVars = ['HEYGEN_API_KEY', 'HEYGEN_AVATAR_ID'];
+      const missingVars = requiredVars.filter(varName => !process.env[varName]);
+      
+      if (missingVars.length > 0) {
+        setEnvError(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env file.`);
+      }
+    };
+
+    // Since we're in a client component, we can't access process.env directly
+    // We'll rely on the server-side validation in the API route
+  }, []);
 
   const handleStartSession = async () => {
     setLoading(true);
@@ -52,6 +67,13 @@ export default function HealthDashboard() {
 
         {/* Middle Section */}
         <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-start md:justify-center">
+          {envError && (
+            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white">
+              <p>Configuration Error: {envError}</p>
+              <p className="mt-2 text-sm">Please ensure your .env file is properly configured with HEYGEN_API_KEY and HEYGEN_AVATAR_ID.</p>
+            </div>
+          )}
+          
           {error && (
             <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white">
               <p>Error: {error}</p>

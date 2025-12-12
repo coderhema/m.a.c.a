@@ -1,10 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { LiveAvatarSession } from "@heygen/liveavatar-web-sdk";
+import { LiveAvatarSession } from "./types";
 
 interface LiveAvatarContextType {
   session: LiveAvatarSession | null;
+  sessionInitializing: boolean;
 }
 
 const LiveAvatarContext = createContext<LiveAvatarContextType | undefined>(undefined);
@@ -14,21 +15,67 @@ export const LiveAvatarContextProvider: React.FC<{
   sessionAccessToken?: string | null;
 }> = ({ children, sessionAccessToken }) => {
   const [session, setSession] = useState<LiveAvatarSession | null>(null);
+  const [sessionInitializing, setSessionInitializing] = useState(false);
 
   useEffect(() => {
+    // Clean up any existing session
+    setSession(prevSession => {
+      if (prevSession) {
+        // Attempt to stop any existing session
+        try {
+          // We can't await this, but we'll try to clean up
+          (prevSession as unknown as LiveAvatarSession).stop?.();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+      return null;
+    });
+    
     if (!sessionAccessToken) {
-      setSession(null);
+      setSessionInitializing(false);
       return;
     }
-    const newSession = new LiveAvatarSession(sessionAccessToken);
-    setSession(newSession);
+    
+    // Set initializing state
+    setSessionInitializing(true);
+    
+    // Dynamically import the LiveAvatarSession class
+    const initSession = async () => {
+      try {
+        const liveAvatarModule = await import("@heygen/liveavatar-web-sdk");
+        const LiveAvatarSessionClass = liveAvatarModule.LiveAvatarSession;
+        const newSession = new LiveAvatarSessionClass(sessionAccessToken);
+        setSession(newSession as unknown as LiveAvatarSession);
+      } catch (error) {
+        console.error("Failed to initialize LiveAvatarSession:", error);
+        setSession(null);
+      } finally {
+        setSessionInitializing(false);
+      }
+    };
+    
+    initSession();
+    
+    // Cleanup function
     return () => {
-      setSession(null);
+      setSession(prevSession => {
+        if (prevSession) {
+          // Attempt to stop the session
+          try {
+            (prevSession as unknown as LiveAvatarSession).stop?.();
+          } catch (e) {
+            // Ignore errors during cleanup
+          }
+        }
+        return null;
+      });
+      setSessionInitializing(false);
     };
   }, [sessionAccessToken]);
 
   return (
-    <LiveAvatarContext.Provider value={{ session }}>
+    <LiveAvatarContext.Provider value={{ session, sessionInitializing }}>
       {children}
     </LiveAvatarContext.Provider>
   );
