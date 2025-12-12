@@ -203,7 +203,7 @@ function HeroVisuals() {
               icon={<div className="text-4xl">💙</div>}
               value="50+"
               label="Specialties"
-              subLabel="Across departments"
+              subLabel="we can access"
             />
           </div>
 
