@@ -113,7 +113,8 @@ export default function HealthDashboard() {
             <button
               onClick={handleStartSession}
               disabled={loading}
-              className="bg-primary hover:bg-primary/90 text-black font-bold py-4 px-8 rounded-full transition-all transform hover:scale-105 mb-4 disabled:opacity-50"
+
+              className="bg-primary hover:bg-primary/90 text-black font-bold py-4 px-8 rounded-full transition-all transform hover:scale-105 mb-4 disabled:opacity-50 text-lg"
             >
               {loading ? "Connecting..." : "Talk to AI Doctor"}
             </button>
