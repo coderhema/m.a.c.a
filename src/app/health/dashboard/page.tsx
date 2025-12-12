@@ -93,6 +93,7 @@ export default function HealthDashboard() {
           >
             <BottomControls 
               variant="livekit"
+              callDuration={callDuration}
               onTranscript={setCurrentTranscript}
               onResponse={setCurrentResponse}
             />
