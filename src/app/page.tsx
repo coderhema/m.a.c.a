@@ -1,10 +1,5 @@
-import Image from "next/image";
-import { redirect } from 'next/navigation';
-import { PiArrowLeft, PiDotsThree, PiCheck, PiKeyboard, PiPaperPlaneTilt, PiMicrophoneSlash, PiVideoCamera, PiCameraRotate, PiPhoneX, PiWifiHigh } from "react-icons/pi";
-
-import Header from "./components/Header";
-import BottomControls from "./components/BottomControls";
+import LandingPage from "./landing/LandingPage";
 
 export default function Home() {
-  redirect('/health/dashboard');
+  return <LandingPage />;
 }
