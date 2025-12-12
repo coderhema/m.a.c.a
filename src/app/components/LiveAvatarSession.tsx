@@ -287,13 +287,24 @@ export const LiveAvatarSession: React.FC<{
           <Button onClick={() => keepAlive().catch(console.error)} variant="secondary">
             Keep Alive
           </Button>
-          <Button onClick={() => startListening().catch(console.error)}>
+          <Button 
+            onClick={() => startListening?.()?.catch(console.error)} 
+            disabled={!sessionExists || sessionState !== "active"}
+          >
             Start Listening
           </Button>
-          <Button onClick={() => stopListening().catch(console.error)} variant="secondary">
+          <Button 
+            onClick={() => stopListening?.()?.catch(console.error)} 
+            variant="secondary"
+            disabled={!sessionExists || sessionState !== "active"}
+          >
             Stop Listening
           </Button>
-          <Button onClick={() => interrupt().catch(console.error)} variant="danger">
+          <Button 
+            onClick={() => interrupt?.()?.catch(console.error)} 
+            variant="danger"
+            disabled={!sessionExists || sessionState !== "active"}
+          >
             Interrupt
           </Button>
         </div>
