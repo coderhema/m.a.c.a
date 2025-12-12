@@ -22,10 +22,10 @@ export default function Header({ callDuration = "00:00" }: HeaderProps) {
             <div className="flex items-center gap-5 pl-3">
               <div>
                 <h3 className="text-white text-sm font-bold leading-tight">
-                  Dr. Sarah AI
+                  M.A.C.A.
                 </h3>
                 <p className="text-gray-400 text-xs font-normal">
-                  General Practitioner • {callDuration}
+                  Health Assistant • {callDuration}
                 </p>
               </div>
             </div>
