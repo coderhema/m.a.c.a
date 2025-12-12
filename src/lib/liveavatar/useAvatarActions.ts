@@ -20,7 +20,12 @@ export const useAvatarActions = (mode: "FULL" | "CUSTOM") => {
           body: JSON.stringify({ text: message }),
         });
         const { audio } = await res.json();
-        return session?.repeatAudio(audio);
+        // Play audio directly instead of trying to pass it to HeyGen session
+        if (audio) {
+          const audioUrl = `data:audio/mp3;base64,${audio}`;
+          const audioElement = new Audio(audioUrl);
+          audioElement.play();
+        }
       }
     },
     [session, mode],
