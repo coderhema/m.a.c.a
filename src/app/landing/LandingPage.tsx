@@ -175,21 +175,14 @@ function HeroVisuals() {
             />
           </div>
           
-          {/* Floating Experts Pill */}
+          {/* Floating AI Assistant Pill */}
           <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-primary to-emerald-500 p-4 rounded-2xl shadow-xl flex items-center gap-4 text-black z-20 backdrop-blur-sm bg-opacity-90">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <img 
-                  key={i}
-                  src={`https://i.pravatar.cc/100?img=${i + 10}`} 
-                  alt="Expert"
-                  className="w-8 h-8 rounded-full border-2 border-primary"
-                />
-              ))}
+            <div className="w-12 h-12 rounded-full bg-black/20 flex items-center justify-center text-2xl">
+            🌐
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-sm truncate">+500 Experts</div>
-              <div className="text-[10px] text-emerald-900 truncate">Trust our solutions</div>
+              <div className="font-bold text-sm truncate">24/7 AI Assistant</div>
+              <div className="text-[10px] text-emerald-900 truncate">Always ready to help with your health</div>
             </div>
           </div>
         </div>
