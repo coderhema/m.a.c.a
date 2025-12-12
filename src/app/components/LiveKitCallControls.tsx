@@ -1,12 +1,20 @@
 "use client";
 
-import { PiMicrophoneSlash, PiMicrophone, PiPhoneX, PiHandPalm, PiWaveSine } from "react-icons/pi";
+import { useState } from "react";
+import { PiMicrophoneSlash, PiMicrophone, PiPhoneX, PiHandPalm, PiWaveSine, PiCamera, PiSpinner } from "react-icons/pi";
 import { useVoiceChatLiveKit, useSessionLiveKit, useAvatarActionsLiveKit } from "@/lib/liveavatar-livekit/hooks";
+import { useVision } from "@/lib/vision/VisionContext";
 
-export default function LiveKitCallControls() {
+interface LiveKitCallControlsProps {
+  onVisionResult?: (analysis: string) => void;
+}
+
+export default function LiveKitCallControls({ onVisionResult }: LiveKitCallControlsProps) {
   const { isActive, isMuted, start, stop, mute, unmute } = useVoiceChatLiveKit();
   const { interrupt } = useAvatarActionsLiveKit();
   const { stopSession, keepAlive } = useSessionLiveKit();
+  const { captureAndAnalyze, isAnalyzing } = useVision();
+  const [lastVisionResult, setLastVisionResult] = useState<string | null>(null);
 
   const handleVoiceChatToggle = () => {
     if (isActive) {
@@ -23,6 +31,15 @@ export default function LiveKitCallControls() {
 
   // Mute toggle is now handled in voice chat toggle
   // const handleMuteToggle removed - functionality merged
+
+  const handleScan = async () => {
+    const result = await captureAndAnalyze();
+    if (result) {
+      setLastVisionResult(result);
+      onVisionResult?.(result);
+      console.log("Vision scan result:", result);
+    }
+  };
 
   return (
     <>
@@ -49,6 +66,31 @@ export default function LiveKitCallControls() {
           </div>
           <span className="text-[10px] text-gray-400 font-medium md:hidden">
             {!isActive ? "Off" : isMuted ? "Muted" : "On"}
+          </span>
+        </button>
+
+        {/* Scan/Vision Button */}
+        <button 
+          onClick={handleScan}
+          disabled={isAnalyzing}
+          className="flex flex-col items-center gap-1 group"
+        >
+          <div className={`flex items-center justify-center size-14 rounded-full transition-all active:scale-95 ${
+            isAnalyzing 
+              ? 'bg-primary/50 text-white' 
+              : 'bg-white/10 group-hover:bg-white/20 text-white'
+          }`}>
+            {isAnalyzing ? (
+              <PiSpinner className="text-[28px] animate-spin" />
+            ) : (
+              <PiCamera 
+                className="text-[28px]"
+                style={{ fontVariationSettings: "'FILL' 0" }}
+              />
+            )}
+          </div>
+          <span className="text-[10px] text-gray-400 font-medium md:hidden">
+            {isAnalyzing ? "Scanning" : "Scan"}
           </span>
         </button>
 

@@ -14,7 +14,7 @@ interface LiveKitAvatarSessionProps {
   showSelfView?: boolean;
 }
 
-// Self-view camera component - shows user's own camera feed
+// Self-view camera component - shows user's own camera feed (like WhatsApp)
 const SelfViewCamera: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCamera, setHasCamera] = useState(false);
@@ -34,6 +34,7 @@ const SelfViewCamera: React.FC = () => {
           videoRef.current.srcObject = stream;
           setVideoRef(videoRef.current);
           setHasCamera(true);
+          console.log("Self-view camera started successfully");
         }
       } catch (err) {
         console.log("Camera not available for self-view:", err);
@@ -57,33 +58,36 @@ const SelfViewCamera: React.FC = () => {
     <div
       className={`absolute z-40 transition-all duration-300 ${
         isMinimized
-          ? "top-4 right-4 w-12 h-12"
-          : "top-4 right-4 w-24 h-18 md:w-28 md:h-20"
+          ? "top-4 right-4 w-16 h-16 rounded-full"
+          : "top-4 right-4 w-32 h-24 md:w-40 md:h-32 rounded-xl"
       }`}
     >
       <div
-        className={`relative w-full h-full rounded-lg overflow-hidden border-2 shadow-xl cursor-pointer bg-black transition-all ${
-          isAnalyzing ? "border-primary animate-pulse" : "border-white/40"
+        className={`relative w-full h-full overflow-hidden shadow-2xl cursor-pointer bg-black transition-all ${
+          isMinimized ? "rounded-full" : "rounded-xl"
+        } ${
+          isAnalyzing ? "border-4 border-primary animate-pulse" : "border-3 border-white/60"
         }`}
         onClick={() => setIsMinimized(!isMinimized)}
+        style={{ borderWidth: isMinimized ? '2px' : '3px' }}
       >
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover ${isMinimized ? "rounded-full" : ""}`}
           style={{ transform: "scaleX(-1)" }}
         />
         {/* Scanning overlay */}
         {isAnalyzing && (
-          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-primary/30 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         {/* Label */}
         {!isMinimized && !isAnalyzing && (
-          <div className="absolute bottom-0.5 left-0.5 bg-black/70 px-1 py-0.5 rounded text-[8px] text-white">
+          <div className="absolute bottom-1 left-1 bg-black/70 px-2 py-0.5 rounded text-xs text-white font-medium">
             You
           </div>
         )}

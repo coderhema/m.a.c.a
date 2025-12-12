@@ -7,6 +7,7 @@ interface BottomControlsProps {
   onStatusChange?: (status: string) => void;
   onTranscript?: (text: string) => void;
   onResponse?: (text: string) => void;
+  onVisionResult?: (analysis: string) => void;
   callDuration?: string;
 }
 
@@ -15,6 +16,7 @@ export default function BottomControls({
   onStatusChange,
   onTranscript,
   onResponse,
+  onVisionResult,
   callDuration = "00:00",
 }: BottomControlsProps) {
   const renderControls = () => {
@@ -28,7 +30,7 @@ export default function BottomControls({
           />
         );
       case "livekit":
-        return <LiveKitCallControls />;
+        return <LiveKitCallControls onVisionResult={onVisionResult} />;
       default:
         return <CallControls />;
     }
