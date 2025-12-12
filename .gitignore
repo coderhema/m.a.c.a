@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+srctemp_liveavatar_files*
 
 # production
 /build

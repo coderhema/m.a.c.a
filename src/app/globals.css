@@ -4,10 +4,11 @@
   --color-primary: #36e27b;
   --color-background-light: #f6f8f7;
   --color-background-dark: #112117;
-  --font-display: "Spline Sans", sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
   --radius-lg: 2rem;
   --radius-xl: 3rem;
 }
+
 
 /* Custom scrollbar hide */
 .no-scrollbar::-webkit-scrollbar {
@@ -21,3 +22,8 @@
 body {
   min-height: max(884px, 100dvh);
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
