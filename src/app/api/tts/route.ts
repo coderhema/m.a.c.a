@@ -1,24 +1,37 @@
 import { NextResponse } from "next/server";
 
-const YARNGPT_API_URL = "https://yarngpt.ai/api/v1/tts";
+// ElevenLabs TTS API
+// Default voice: Rachel (21m00Tcm4TlvDq8ikWAM) - clear, professional
+const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 interface TTSRequest {
   text: string;
   voice?: string;
-  response_format?: "mp3" | "wav" | "opus" | "flac";
 }
+
+// ElevenLabs voice IDs
+const VOICE_IDS: Record<string, string> = {
+  rachel: "21m00Tcm4TlvDq8ikWAM",
+  adam: "pNInz6obpgDQGcFmaJgB",
+  antoni: "ErXwobaYiN019PkySvjV",
+  bella: "EXAVITQu4vr4xnSDxMaL",
+  elli: "MF3mGyEYCl7XYWbV9V6O",
+  josh: "TxGEqnHWrfWFTfGW9XjX",
+};
 
 export async function POST(request: Request) {
   try {
-    // Check if API key is configured
-    if (!process.env.YARNGPT_API_KEY) {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+
+    if (!apiKey) {
+      console.error("TTS: ELEVENLABS_API_KEY not configured");
       return NextResponse.json(
-        { error: "YarnGPT API key is not configured" },
+        { error: "ElevenLabs API key is not configured" },
         { status: 500 }
       );
     }
 
-    const { text, voice = "Idera", response_format = "wav" }: TTSRequest = await request.json();
+    const { text, voice = "rachel" }: TTSRequest = await request.json();
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -27,55 +40,57 @@ export async function POST(request: Request) {
       );
     }
 
-    if (text.length > 2000) {
-      return NextResponse.json(
-        { error: "Text must be 2000 characters or less" },
-        { status: 400 }
-      );
-    }
+    // Truncate if too long (ElevenLabs has limits)
+    const truncatedText = text.length > 2500 ? text.substring(0, 2500) : text;
 
-    // Call YarnGPT TTS API
-    const response = await fetch(YARNGPT_API_URL, {
+    const voiceId = VOICE_IDS[voice.toLowerCase()] || VOICE_IDS.rachel;
+
+    console.log("TTS: Processing with ElevenLabs", {
+      textLength: truncatedText.length,
+      voice: voice,
+      voiceId: voiceId,
+    });
+
+    const response = await fetch(`${ELEVENLABS_API_URL}/${voiceId}?output_format=pcm_24000`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.YARNGPT_API_KEY}`,
+        "xi-api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text,
-        voice,
-        response_format,
+        text: truncatedText,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+        },
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("YarnGPT API error:", errorData);
+      const errorText = await response.text();
+      console.error("TTS: ElevenLabs API error:", response.status, errorText);
       return NextResponse.json(
         {
           error: "Failed to generate speech",
-          details: errorData,
+          details: errorText,
         },
         { status: response.status }
       );
     }
 
-    // Get the audio data as buffer
     const audioBuffer = await response.arrayBuffer();
 
-    // Determine content type based on format
-    const contentTypes: Record<string, string> = {
-      mp3: "audio/mpeg",
-      wav: "audio/wav",
-      opus: "audio/opus",
-      flac: "audio/flac",
-    };
+    console.log("TTS: Success with ElevenLabs", {
+      audioSizeKB: (audioBuffer.byteLength / 1024).toFixed(2) + "KB",
+    });
 
-    // Return the audio file
     return new NextResponse(audioBuffer, {
       headers: {
-        "Content-Type": contentTypes[response_format] || "audio/wav",
+        "Content-Type": "audio/pcm",
         "Content-Length": audioBuffer.byteLength.toString(),
+        "X-Sample-Rate": "24000",
+        "X-Bit-Depth": "16",
       },
     });
   } catch (error) {

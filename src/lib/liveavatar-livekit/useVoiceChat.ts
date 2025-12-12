@@ -96,7 +96,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
         const updatedHistory = [...conversationHistory, newUserMessage];
 
         // Step 2: LLM Processing (Gemini)
-        log.info("[2/4] LLM: Sending to OpenAI GPT...", {
+        log.info("[2/4] LLM: Sending to Groq Llama...", {
           message: transcribedText,
           historyLength: conversationHistory.length 
         });
@@ -139,7 +139,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
         setConversationHistory(finalHistory);
 
         // Step 3: Text-to-Speech (YarnGPT)
-        log.info("[3/4] TTS: Converting to speech with YarnGPT...", {
+        log.info("[3/4] TTS: Converting to speech with ElevenLabs...", {
           textLength: llmResponse.length,
           voice
         });
@@ -177,10 +177,21 @@ export function useVoiceChat(options: VoiceChatOptions) {
         // Step 4: Send to LiveAvatar
         log.info("[4/4] AVATAR: Sending audio to LiveAvatar...");
         const avatarStartTime = Date.now();
+        
+        // Signal avatar to start listening RIGHT BEFORE sending audio
+        log.info("[4/4] AVATAR: Signaling start listening...");
+        await startAvatarListening(room);
+        
+        // Send the audio
         await sendAudioToAvatar(room, audioResponseBlob, {
-          format: "wav",
+          format: "pcm",
           sampleRate: 24000,
         });
+        
+        // Signal avatar to stop listening AFTER audio is sent
+        log.info("[4/4] AVATAR: Signaling stop listening...");
+        await stopAvatarListening(room);
+        
         const avatarDuration = Date.now() - avatarStartTime;
         
         const totalDuration = sttDuration + llmDuration + ttsDuration + avatarDuration;
@@ -222,11 +233,8 @@ export function useVoiceChat(options: VoiceChatOptions) {
     try {
       log.info("=== RECORDING START ===");
       
-      // Signal avatar to start listening
-      if (room) {
-        log.info("Notifying avatar to start listening...");
-        await startAvatarListening(room);
-      }
+      // NOTE: Don't send agent.start_listening here - it should be sent
+      // right before the audio, not at recording start (per HeyGen workflow)
       
       log.info("Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -262,11 +270,8 @@ export function useVoiceChat(options: VoiceChatOptions) {
           totalSizeKB: (totalSize / 1024).toFixed(2) + "KB"
         });
         
-        // Signal avatar to stop listening
-        if (room) {
-          log.info("Notifying avatar to stop listening...");
-          await stopAvatarListening(room);
-        }
+        // NOTE: Don't stop listening here - wait until AFTER audio is sent to avatar
+        // The listening state helps avatar know to expect audio
         
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
@@ -290,10 +295,6 @@ export function useVoiceChat(options: VoiceChatOptions) {
       log.info("Voice recording active - speak now!");
     } catch (error) {
       log.error("Failed to start recording", error);
-      // Try to stop listening state on error
-      if (room) {
-        await stopAvatarListening(room).catch(() => {});
-      }
       onError?.(error instanceof Error ? error : new Error("Microphone access denied"));
     }
   }, [room, processVoiceInput, onError]);

@@ -40,10 +40,28 @@ type LiveAvatarEvent = AgentSpeakEvent | AgentSpeakEndEvent | AgentInterruptEven
  * Send a LiveAvatar event via LiveKit data channel
  */
 async function sendEvent(room: Room, event: LiveAvatarEvent): Promise<void> {
+  if (!room.localParticipant) {
+    log.error("[AVATAR] Cannot send event - no local participant");
+    throw new Error("No local participant in room");
+  }
+  
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(event));
-  await room.localParticipant?.publishData(data, { reliable: true });
-  log.debug("Event sent", { type: event.type, dataSize: data.length });
+  
+  log.debug("[AVATAR] Sending event", { 
+    type: event.type, 
+    dataSize: data.length,
+    roomState: room.state,
+    participantId: room.localParticipant.identity
+  });
+  
+  try {
+    await room.localParticipant.publishData(data, { reliable: true });
+    log.debug("[AVATAR] Event sent successfully", { type: event.type });
+  } catch (error) {
+    log.error("[AVATAR] Failed to send event", error, { type: event.type });
+    throw error;
+  }
 }
 
 /**
@@ -142,68 +160,63 @@ export async function sendAudioToAvatar(
     pcmBuffer = bytes.buffer;
   } else if (audioData instanceof Blob) {
     const arrayBuffer = await audioData.arrayBuffer();
-    // If WAV format, extract PCM data
+    // If WAV format, extract PCM data; PCM is already ready
     if (options.format === "wav") {
       pcmBuffer = extractPCMFromWav(arrayBuffer);
     } else {
+      // PCM or other formats - use directly
       pcmBuffer = arrayBuffer;
     }
   } else {
     if (options.format === "wav") {
       pcmBuffer = extractPCMFromWav(audioData);
     } else {
+      // PCM or other formats - use directly
       pcmBuffer = audioData;
     }
+  }
+
+  // LiveKit data channel limit is 64KB, base64 inflates by ~33%
+  // Max PCM size = ~48KB to stay under 64KB after base64 + JSON overhead
+  // 48KB PCM @ 24KHz 16-bit = ~1 second of audio
+  const MAX_PCM_SIZE = 48000; // ~1 second of audio
+  
+  // Truncate audio if too large (HeyGen doesn't support chunked audio)
+  if (pcmBuffer.byteLength > MAX_PCM_SIZE) {
+    log.warn("[AVATAR] Audio too large, truncating to fit single message", { 
+      originalSize: pcmBuffer.byteLength,
+      truncatedSize: MAX_PCM_SIZE,
+      originalDurationSec: (pcmBuffer.byteLength / 48000).toFixed(1),
+      truncatedDurationSec: "1.0"
+    });
+    pcmBuffer = pcmBuffer.slice(0, MAX_PCM_SIZE);
   }
 
   // Convert to base64
   const base64Audio = arrayBufferToBase64(pcmBuffer);
   
+  // Debug: Log first few bytes to verify format
+  const firstBytes = new Uint8Array(pcmBuffer.slice(0, 16));
+  log.debug("[AVATAR] PCM data preview (first 16 bytes)", {
+    bytes: Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')
+  });
+  
   log.info("[AVATAR] Sending audio", { 
     pcmSize: pcmBuffer.byteLength,
     pcmSizeKB: (pcmBuffer.byteLength / 1024).toFixed(2) + "KB",
-    base64Length: base64Audio.length
+    base64Length: base64Audio.length,
+    estimatedDurationSec: (pcmBuffer.byteLength / 48000).toFixed(1)
   });
 
-  // Send audio in chunks if too large (LiveAvatar recommends small packets)
-  const MAX_CHUNK_SIZE = 500000; // 500KB base64 chunks
-  
-  if (base64Audio.length > MAX_CHUNK_SIZE) {
-    log.info("[AVATAR] Audio too large, sending in chunks", { 
-      totalSize: base64Audio.length,
-      chunkSize: MAX_CHUNK_SIZE 
-    });
-    
-    for (let i = 0; i < base64Audio.length; i += MAX_CHUNK_SIZE) {
-      const chunk = base64Audio.slice(i, i + MAX_CHUNK_SIZE);
-      const chunkNum = Math.floor(i / MAX_CHUNK_SIZE) + 1;
-      const totalChunks = Math.ceil(base64Audio.length / MAX_CHUNK_SIZE);
-      
-      log.debug(`[AVATAR] Sending chunk ${chunkNum}/${totalChunks}`);
-      
-      await sendEvent(room, {
-        type: "agent.speak",
-        audio: chunk,
-        event_id: eventId,
-      });
-      
-      // Small delay between chunks
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-  } else {
-    // Send as single message
-    await sendEvent(room, {
-      type: "agent.speak",
-      audio: base64Audio,
-      event_id: eventId,
-    });
-  }
-
-  // Signal end of speaking
+  // Send as single message
   await sendEvent(room, {
-    type: "agent.speak_end",
+    type: "agent.speak",
+    audio: base64Audio,
     event_id: eventId,
   });
+
+  // Note: agent.stop_listening will be called after this by the caller
+  // Don't send agent.speak_end - the workflow uses agent.stop_listening instead
 
   log.info("[AVATAR] Audio sent successfully", { eventId });
 }

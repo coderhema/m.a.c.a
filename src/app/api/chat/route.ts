@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-// OpenAI API
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+// Groq API
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // System prompt for MACA
 const SYSTEM_PROMPT = `You are MACA (Multimodal Assistant for Clinical Analysis), a knowledgeable medical AI assistant.
@@ -32,7 +32,13 @@ STANDARD LIMITATIONS (Non-Emergency):
 - You ALWAYS advise consulting a licensed medical practitioner for treatment
 - You specify WHICH TYPE of practitioner based on the diagnosis
 
-Maintain a professional, empathetic, and helpful tone in all languages. Clearly distinguish between life-threatening emergencies and standard medical consultations.`;
+Maintain a professional, empathetic, and helpful tone in all languages. Clearly distinguish between life-threatening emergencies and standard medical consultations.
+
+IMPORTANT FOR VOICE RESPONSES:
+- Keep responses concise and conversational (under 100 words)
+- Speak naturally as if in a real conversation
+- Ask one question at a time
+- Avoid long lists or bullet points`;
 
 interface Message {
   role: "user" | "assistant";
@@ -46,7 +52,7 @@ interface ChatRequest {
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     const { message, history = [] }: ChatRequest = await request.json();
 
     if (!message || typeof message !== "string") {
@@ -58,12 +64,12 @@ export async function POST(request: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "OpenAI API key is not configured" },
+        { error: "Groq API key is not configured" },
         { status: 500 }
       );
     }
 
-    // Build messages array for OpenAI
+    // Build messages array for Groq (OpenAI-compatible)
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
       // Add history
@@ -75,41 +81,41 @@ export async function POST(request: Request) {
       { role: "user", content: message },
     ];
 
-    console.log("Chat: Sending to OpenAI GPT-4o-mini...");
+    console.log("Chat: Sending to Groq Llama...");
 
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "llama-3.3-70b-versatile",
         messages,
-        max_tokens: 1024,
+        max_tokens: 200, // Keep responses short for TTS
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("Chat: OpenAI API error:", response.status, errorData);
-      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
+      console.error("Chat: Groq API error:", response.status, errorData);
+      throw new Error(errorData.error?.message || `Groq API error: ${response.status}`);
     }
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content;
 
     if (!text) {
-      console.error("Chat: Empty response from OpenAI");
-      throw new Error("Empty response from OpenAI");
+      console.error("Chat: Empty response from Groq");
+      throw new Error("Empty response from Groq");
     }
 
-    console.log("Chat: Success with GPT-4o-mini");
+    console.log("Chat: Success with Groq Llama");
 
     return NextResponse.json({
       response: text,
       conversationId: crypto.randomUUID(),
-      model: "gpt-4o-mini",
+      model: "llama-3.3-70b-versatile",
     });
 
   } catch (error) {
