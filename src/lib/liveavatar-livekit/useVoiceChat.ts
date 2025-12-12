@@ -34,6 +34,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
   } = options;
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRecordingState, setIsRecordingState] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -58,8 +59,8 @@ export function useVoiceChat(options: VoiceChatOptions) {
       });
 
       try {
-        // Step 1: Speech-to-Text (Whisper)
-        log.info("[1/4] STT: Sending audio to Whisper...");
+        // Step 1: Speech-to-Text (ElevenLabs)
+        log.info("[1/4] STT: Sending audio to ElevenLabs...");
         onTranscriptionStart?.();
 
         const formData = new FormData();
@@ -95,7 +96,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
         const updatedHistory = [...conversationHistory, newUserMessage];
 
         // Step 2: LLM Processing (Gemini)
-        log.info("[2/4] LLM: Sending to Gemini...", { 
+        log.info("[2/4] LLM: Sending to OpenAI GPT...", {
           message: transcribedText,
           historyLength: conversationHistory.length 
         });
@@ -285,6 +286,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
 
       mediaRecorder.start();
       mediaRecorderRef.current = mediaRecorder;
+      setIsRecordingState(true);
       log.info("Voice recording active - speak now!");
     } catch (error) {
       log.error("Failed to start recording", error);
@@ -303,14 +305,8 @@ export function useVoiceChat(options: VoiceChatOptions) {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       log.info("Stopping voice recording");
       mediaRecorderRef.current.stop();
+      setIsRecordingState(false);
     }
-  }, []);
-
-  /**
-   * Check if currently recording
-   */
-  const isRecording = useCallback(() => {
-    return mediaRecorderRef.current?.state === "recording";
   }, []);
 
   /**
@@ -325,7 +321,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
     processVoiceInput,
     startRecording,
     stopRecording,
-    isRecording,
+    isRecording: isRecordingState,
     isProcessing,
     conversationHistory,
     resetConversation,

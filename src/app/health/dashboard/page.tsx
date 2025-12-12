@@ -103,10 +103,10 @@ export default function HealthDashboard() {
 
       <Header callDuration={sessionData ? callDuration : undefined} />
 
-      {/* Middle Section */}
-      <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-center md:justify-center">
+      {/* Middle Section - pointer-events-none so it doesn't block controls beneath */}
+      <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-center md:justify-center pointer-events-none">
         {error && (
-          <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white max-w-md mx-auto">
+          <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white max-w-md mx-auto pointer-events-auto">
             <p className="font-semibold">Error</p>
             <p className="text-sm">{error}</p>
             <button 
@@ -134,7 +134,7 @@ export default function HealthDashboard() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center w-full h-full">
+          <div className="flex flex-col items-center justify-center w-full h-full pointer-events-auto">
             <button
               onClick={handleStartSession}
               disabled={loading}

@@ -63,7 +63,7 @@ export default function CustomModeCallControls({
   });
 
   const handleRecordToggle = () => {
-    if (isRecording()) {
+    if (isRecording) {
       log.info("[UI] User stopped recording");
       stopRecording();
       updateStatus("Processing...");
@@ -74,15 +74,13 @@ export default function CustomModeCallControls({
     }
   };
 
-  const recording = isRecording();
-
   return (
     <>
       {/* Status Display */}
       <div className="text-center mb-4">
         <span
           className={`text-sm font-medium px-4 py-2 rounded-full ${
-            recording
+            isRecording
               ? "bg-red-500/20 text-red-400"
               : isProcessing
               ? "bg-yellow-500/20 text-yellow-400"
@@ -107,13 +105,13 @@ export default function CustomModeCallControls({
           <div className={`flex items-center justify-center size-14 rounded-full transition-all active:scale-95 ${
             isProcessing
               ? 'bg-gray-600 cursor-not-allowed'
-              : recording
+              : isRecording
               ? 'bg-red-500 text-white shadow-lg shadow-red-500/50'
               : 'bg-primary text-black hover:bg-primary/80'
           }`}>
             {isProcessing ? (
               <PiSpinnerGapBold className="text-[28px] text-white animate-spin" />
-            ) : recording ? (
+            ) : isRecording ? (
               <PiMicrophoneSlashFill className="text-[28px]" />
             ) : (
               <PiMicrophoneFill className="text-[28px]" />
@@ -121,12 +119,12 @@ export default function CustomModeCallControls({
           </div>
           
           {/* Recording pulse animation */}
-          {recording && !isProcessing && (
+          {isRecording && !isProcessing && (
             <span className="absolute inset-0 rounded-full top-0 left-0 right-0 bottom-5 bg-red-500 animate-ping opacity-30" />
           )}
           
           <span className="text-[10px] text-gray-400 font-medium md:hidden">
-            {recording ? "Recording" : isProcessing ? "Wait" : "Speak"}
+            {isRecording ? "Recording" : isProcessing ? "Wait" : "Speak"}
           </span>
         </button>
 
@@ -171,7 +169,7 @@ export default function CustomModeCallControls({
       </div>
 
       {/* Instructions */}
-      {!recording && !isProcessing && status === "Ready" && (
+      {!isRecording && !isProcessing && status === "Ready" && (
         <p className="text-xs text-gray-500 text-center mt-3">
           Tap the mic to speak with MACA
         </p>

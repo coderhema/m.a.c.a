@@ -42,7 +42,7 @@ export function VoiceChatExample() {
   });
 
   const handleRecordToggle = () => {
-    if (isRecording()) {
+    if (isRecording) {
       stopRecording();
       setStatus("Processing...");
     } else {
@@ -51,7 +51,7 @@ export function VoiceChatExample() {
     }
   };
 
-  const recording = isRecording();
+  const recording = isRecording;
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">

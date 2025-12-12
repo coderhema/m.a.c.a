@@ -1,8 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// OpenAI API
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 // System prompt for MACA
 const SYSTEM_PROMPT = `You are MACA (Multimodal Assistant for Clinical Analysis), a knowledgeable medical AI assistant.
@@ -47,6 +46,7 @@ interface ChatRequest {
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
     const { message, history = [] }: ChatRequest = await request.json();
 
     if (!message || typeof message !== "string") {
@@ -56,39 +56,62 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "Gemini API key is not configured" },
+        { error: "OpenAI API key is not configured" },
         { status: 500 }
       );
     }
 
-    // Initialize the model
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
-      systemInstruction: SYSTEM_PROMPT,
+    // Build messages array for OpenAI
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      // Add history
+      ...history.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+      // Add current message
+      { role: "user", content: message },
+    ];
+
+    console.log("Chat: Sending to OpenAI GPT-4o-mini...");
+
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages,
+        max_tokens: 1024,
+      }),
     });
 
-    // Convert history to Gemini format
-    const chatHistory = history.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
-    }));
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Chat: OpenAI API error:", response.status, errorData);
+      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
+    }
 
-    // Start chat with history
-    const chat = model.startChat({
-      history: chatHistory,
-    });
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
 
-    // Send message and get response
-    const result = await chat.sendMessage(message);
-    const response = result.response;
-    const text = response.text();
+    if (!text) {
+      console.error("Chat: Empty response from OpenAI");
+      throw new Error("Empty response from OpenAI");
+    }
+
+    console.log("Chat: Success with GPT-4o-mini");
 
     return NextResponse.json({
       response: text,
       conversationId: crypto.randomUUID(),
+      model: "gpt-4o-mini",
     });
+
   } catch (error) {
     console.error("Chat API error:", error);
     

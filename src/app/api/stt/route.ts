@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// ElevenLabs Speech-to-Text API
+const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/speech-to-text";
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    
     // Check if API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    if (!apiKey) {
+      console.error("STT API error: ELEVENLABS_API_KEY not configured");
       return NextResponse.json(
-        { error: "OpenAI API key is not configured" },
+        { error: "ElevenLabs API key is not configured" },
         { status: 500 }
       );
     }
@@ -30,23 +30,49 @@ export async function POST(request: Request) {
     // Optional: Get language hint from request
     const language = formData.get("language") as string | null;
 
-    // Convert File to format OpenAI expects
-    const audioBuffer = await audioFile.arrayBuffer();
-    const audioBlob = new Blob([audioBuffer], { type: audioFile.type });
-    const file = new File([audioBlob], audioFile.name, { type: audioFile.type });
-
-    // Transcribe audio using Whisper
-    const transcription = await openai.audio.transcriptions.create({
-      file: file,
-      model: "whisper-1",
-      language: language || undefined, // Auto-detect if not provided
-      response_format: "json",
+    console.log("STT: Processing audio with ElevenLabs", { 
+      type: audioFile.type, 
+      sizeKB: (audioFile.size / 1024).toFixed(2) + "KB" 
     });
+
+    // Create form data for ElevenLabs API
+    const elevenLabsFormData = new FormData();
+    elevenLabsFormData.append("file", audioFile);
+    elevenLabsFormData.append("model_id", "scribe_v1");
+    
+    if (language) {
+      elevenLabsFormData.append("language_code", language);
+    }
+
+    const response = await fetch(ELEVENLABS_API_URL, {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey,
+      },
+      body: elevenLabsFormData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("STT: ElevenLabs API error:", response.status, errorText);
+      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    const transcribedText = data.text?.trim();
+
+    if (!transcribedText) {
+      console.error("STT: Empty transcription response", data);
+      throw new Error("Empty transcription response");
+    }
+
+    console.log("STT: Success with ElevenLabs:", transcribedText.substring(0, 100) + "...");
 
     return NextResponse.json({
-      text: transcription.text,
-      language: language || "auto-detected",
+      text: transcribedText,
+      language: data.language_code || language || "auto-detected",
     });
+
   } catch (error) {
     console.error("STT API error:", error);
 
