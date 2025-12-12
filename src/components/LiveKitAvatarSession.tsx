@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LiveKitRoom, VideoTrack, RoomAudioRenderer, useParticipants, useTracks } from "@livekit/components-react";
+import { LiveKitRoom, VideoTrack, RoomAudioRenderer, useParticipants, useTracks, TrackReference } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
 
@@ -23,11 +23,15 @@ const AvatarVideoRenderer: React.FC = () => {
   );
 
   // Find the avatar's video track (typically from a remote participant)
-  const avatarVideoTrack = tracks.find(track => !track.participant.isLocal);
+  // Filter out placeholders by checking if publication exists (type guard)
+  const avatarVideoTrack = tracks.find(
+    (track): track is TrackReference => 
+      track.publication !== undefined && !track.participant.isLocal
+  );
 
   if (!avatarVideoTrack) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+      <div className="absolute rounded-2xl inset-0 flex items-center justify-center bg-gray-900">
         <div className="flex flex-col items-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
           <p className="text-sm">Waiting for avatar...</p>
@@ -82,7 +86,7 @@ export const LiveKitAvatarSession: React.FC<LiveKitAvatarSessionProps> = ({
       
       {/* Connection status overlay */}
       {!isConnected && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-50">
+        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gray-900 bg-gradient-to-b from-black/60 z-50">
           <div className="flex flex-col items-center text-white">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
             <p className="text-sm">Connecting to LiveKit...</p>

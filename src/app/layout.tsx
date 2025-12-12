@@ -31,7 +31,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden h-screen w-full select-none">
+      <body className="bg-background-light dark:bg-gray-900 font-display antialiased overflow-hidden h-screen w-full select-none">
         {children}
       </body>
     </html>
