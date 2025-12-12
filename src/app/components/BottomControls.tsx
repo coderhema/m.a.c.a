@@ -1,11 +1,37 @@
 import CallControls from "./CallControls";
 import LiveKitCallControls from "./LiveKitCallControls";
+import CustomModeCallControls from "./CustomModeCallControls";
 
 interface BottomControlsProps {
-  variant?: "liveavatar" | "livekit";
+  variant?: "liveavatar" | "livekit" | "custom";
+  onStatusChange?: (status: string) => void;
+  onTranscript?: (text: string) => void;
+  onResponse?: (text: string) => void;
 }
 
-export default function BottomControls({ variant = "liveavatar" }: BottomControlsProps) {
+export default function BottomControls({ 
+  variant = "liveavatar",
+  onStatusChange,
+  onTranscript,
+  onResponse,
+}: BottomControlsProps) {
+  const renderControls = () => {
+    switch (variant) {
+      case "custom":
+        return (
+          <CustomModeCallControls
+            onStatusChange={onStatusChange}
+            onTranscript={onTranscript}
+            onResponse={onResponse}
+          />
+        );
+      case "livekit":
+        return <LiveKitCallControls />;
+      default:
+        return <CallControls />;
+    }
+  };
+
   return (
     <>
       {/* Bottom Controls Section */}
@@ -13,7 +39,7 @@ export default function BottomControls({ variant = "liveavatar" }: BottomControl
         {/* Drag Handle (Mobile Only) */}
         <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 md:hidden"></div>
         
-        {variant === "livekit" ? <LiveKitCallControls /> : <CallControls />}
+        {renderControls()}
       </div>
     </>
   );

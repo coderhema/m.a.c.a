@@ -16,6 +16,8 @@ export default function VideoCallPage() {
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentTranscript, setCurrentTranscript] = useState<string>("");
+  const [currentResponse, setCurrentResponse] = useState<string>("");
 
   useEffect(() => {
     // Create LiveAvatar session on mount
@@ -61,7 +63,14 @@ export default function VideoCallPage() {
             livekitUrl={sessionData.livekit_url}
             token={sessionData.livekit_client_token}
             onDisconnect={handleDisconnect}
-          />
+          >
+            {/* Custom mode controls are rendered inside LiveKitRoom context */}
+            <BottomControls 
+              variant="custom"
+              onTranscript={setCurrentTranscript}
+              onResponse={setCurrentResponse}
+            />
+          </LiveKitAvatarSession>
         )}
         
         {/* Loading State */}
@@ -98,12 +107,29 @@ export default function VideoCallPage() {
 
       <Header />
 
-      {/* Middle Section */}
-      <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-start md:justify-center">
-        {/* Content can be added here */}
+      {/* Middle Section - Show conversation transcripts */}
+      <div className="flex-1 relative z-10 flex flex-col justify-end pb-32 px-4 md:px-8 md:pb-40 md:items-start md:justify-center">
+        {/* Conversation Display */}
+        {(currentTranscript || currentResponse) && sessionData && (
+          <div className="space-y-3 max-w-lg">
+            {currentTranscript && (
+              <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
+                <p className="text-xs text-blue-300 font-medium mb-1">You said:</p>
+                <p className="text-sm text-white">{currentTranscript}</p>
+              </div>
+            )}
+            {currentResponse && (
+              <div className="bg-primary/20 backdrop-blur-sm border border-primary/30 rounded-lg p-3">
+                <p className="text-xs text-primary font-medium mb-1">MACA:</p>
+                <p className="text-sm text-white">{currentResponse}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <BottomControls />
+      {/* BottomControls rendered inside LiveKitAvatarSession for context access */}
+      {!sessionData && <BottomControls />}
     </div>
   );
 }
