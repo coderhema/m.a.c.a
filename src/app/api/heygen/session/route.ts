@@ -26,8 +26,6 @@ interface SessionData {
 export async function POST() {
   const apiKey = process.env.LIVEAVATAR_API_KEY?.replace(/\s/g, "");
   const avatarId = process.env.LIVEAVATAR_AVATAR_ID;
-  const voiceId = process.env.LIVEAVATAR_VOICE_ID;
-  const contextId = process.env.LIVEAVATAR_CONTEXT_ID;
 
   // Validate required environment variables
   if (!apiKey) {
@@ -44,30 +42,13 @@ export async function POST() {
     );
   }
 
-  if (!voiceId) {
-    return NextResponse.json<ErrorResponse>(
-      { error: "LIVEAVATAR_VOICE_ID is not set in environment variables" },
-      { status: 500 }
-    );
-  }
-
-  if (!contextId) {
-    return NextResponse.json<ErrorResponse>(
-      { error: "LIVEAVATAR_CONTEXT_ID is not set in environment variables" },
-      { status: 500 }
-    );
-  }
-
   try {
     // Step 1: Create session token
+    // Using CUSTOM mode - only handles video generation from audio
+    // You'll manage your own LLM/conversation logic
     const tokenPayload = {
-      mode: "FULL",
+      mode: "CUSTOM",
       avatar_id: avatarId,
-      avatar_persona: {
-        voice_id: voiceId,
-        context_id: contextId,
-        language: "en"
-      }
     };
 
     const tokenResponse = await fetch("https://api.liveavatar.com/v1/sessions/token", {

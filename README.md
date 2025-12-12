@@ -27,8 +27,8 @@ Before running this application, you'll need:
 3. LiveAvatar API credentials:
    - LIVEAVATAR_API_KEY (from https://docs.liveavatar.com/)
    - LIVEAVATAR_AVATAR_ID
-   - LIVEAVATAR_VOICE_ID
-   - LIVEAVATAR_CONTEXT_ID
+
+Note: This app uses CUSTOM mode, which only requires an avatar ID. You'll manage your own LLM/conversation logic.
 
 ## Setup Instructions
 
@@ -51,7 +51,7 @@ Before running this application, you'll need:
 4. Configure your LiveAvatar credentials in the `.env.local` file:
    - Sign up at [LiveAvatar](https://www.liveavatar.com/) to get your API key
    - Find your API key on the LiveAvatar settings page
-   - Get your Avatar ID, Voice ID, and Context ID from the LiveAvatar dashboard
+   - Get your Avatar ID from the LiveAvatar dashboard
    - See the [Quick Start Guide](https://docs.liveavatar.com/docs/quick-start-guide) for more details
 
 5. Start the development server:
@@ -67,10 +67,10 @@ The application requires the following environment variables:
 
 - `LIVEAVATAR_API_KEY`: Your LiveAvatar API key for authentication
 - `LIVEAVATAR_AVATAR_ID`: The ID of the avatar you want to use
-- `LIVEAVATAR_VOICE_ID`: The ID of the voice you want to use
-- `LIVEAVATAR_CONTEXT_ID`: The context/persona ID for your avatar
 
 See `.env.example` for a template.
+
+**Note:** Using CUSTOM mode means Voice ID and Context ID are not needed. You handle your own conversation logic.
 
 ## Available Scripts
 
@@ -81,20 +81,38 @@ See `.env.example` for a template.
 
 ## LiveAvatar Integration
 
-This application uses LiveAvatar.com's API with LiveKit for real-time conversational experiences with AI avatars. The integration includes:
+This application uses LiveAvatar.com's API in **CUSTOM mode** with LiveKit for real-time avatar experiences.
 
-- Secure session token generation via LiveAvatar's API
-- Real-time video streaming with LiveKit (WebRTC)
-- Voice and text interaction capabilities
-- Session lifecycle management
+### What is CUSTOM Mode?
 
-The integration follows a two-step process:
-1. Create a session token with avatar configuration
+In CUSTOM mode, LiveAvatar handles video generation from audio only. You manage:
+- Your own LLM/conversation logic
+- Audio input (TTS or microphone)
+- When to send audio to the avatar
+
+LiveAvatar generates the corresponding video of the avatar speaking.
+
+### Integration Flow
+
+1. Create a session token with avatar configuration (CUSTOM mode)
 2. Start the session to get LiveKit room credentials
-3. Connect to the LiveKit room for real-time communication
+3. Connect to the LiveKit room
+4. Send audio data to the avatar via LiveKit data channel
+5. Receive video stream of the avatar speaking
 
-For more information, visit:
-- [LiveAvatar Quick Start Guide](https://docs.liveavatar.com/docs/quick-start-guide)
+### Custom Mode Utilities
+
+The app includes utilities for CUSTOM mode:
+- `sendAudioToAvatar()` - Send audio data to generate avatar video
+- `sendTextAsAudio()` - Convert text to speech and send to avatar
+- `MicrophoneAudioSender` - Capture and stream microphone audio
+
+See `src/lib/liveavatar-livekit/customModeUtils.ts` for implementation details.
+
+### Resources
+
+- [LiveAvatar Custom Mode Guide](https://docs.liveavatar.com/docs/configuring-custom-mode)
+- [LiveAvatar Quick Start](https://docs.liveavatar.com/docs/quick-start-guide)
 - [LiveKit Documentation](https://docs.livekit.io/)
 
 ## Demo Page
