@@ -56,14 +56,17 @@ export async function POST() {
 
   try {
     // Step 1: Create session token
-    // Using CUSTOM mode - only handles video generation from audio
-    // You'll manage your own LLM/conversation logic
+    // Using FULL mode - HeyGen handles LLM, TTS, and avatar speaking
     const tokenPayload = {
-      mode: "CUSTOM",
+      mode: "FULL",
       avatar_id: avatarId,
+      avatar_persona: {
+        context_id: "997c5c6b-53d9-43dc-861c-554cdae5f906", // MACA medical assistant context
+        language: "en",
+      },
     };
 
-    log.debug("Requesting session token", { avatarId, mode: "CUSTOM" });
+    log.debug("Requesting session token", { avatarId, mode: "FULL" });
 
     const tokenResponse = await fetch("https://api.liveavatar.com/v1/sessions/token", {
       method: "POST",

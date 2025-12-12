@@ -80,8 +80,9 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 /**
- * Extract PCM data from WAV file
+ * Extract PCM data from WAV file and log sample rate
  * WAV format: 44-byte header followed by PCM data
+ * LiveAvatar requires PCM 16Bit 24KHz
  */
 function extractPCMFromWav(wavBuffer: ArrayBuffer): ArrayBuffer {
   const view = new DataView(wavBuffer);
@@ -91,6 +92,26 @@ function extractPCMFromWav(wavBuffer: ArrayBuffer): ArrayBuffer {
   if (riff !== "RIFF") {
     log.warn("Not a valid WAV file, sending as-is");
     return wavBuffer;
+  }
+  
+  // Read WAV format info from fmt chunk (bytes 20-24 contain sample rate)
+  const sampleRate = view.getUint32(24, true);
+  const bitsPerSample = view.getUint16(34, true);
+  const numChannels = view.getUint16(22, true);
+  
+  log.info("[AVATAR] WAV format detected", {
+    sampleRate,
+    bitsPerSample,
+    numChannels,
+    requiredSampleRate: 24000,
+    compatible: sampleRate === 24000 && bitsPerSample === 16
+  });
+  
+  if (sampleRate !== 24000) {
+    log.warn("[AVATAR] Sample rate mismatch! LiveAvatar requires 24000Hz", {
+      actual: sampleRate,
+      required: 24000
+    });
   }
   
   // Find "data" chunk
@@ -177,46 +198,50 @@ export async function sendAudioToAvatar(
   }
 
   // LiveKit data channel limit is 64KB, base64 inflates by ~33%
-  // Max PCM size = ~48KB to stay under 64KB after base64 + JSON overhead
-  // 48KB PCM @ 24KHz 16-bit = ~1 second of audio
-  const MAX_PCM_SIZE = 48000; // ~1 second of audio
+  // Max PCM chunk size = ~30KB to stay safely under 64KB after base64 + JSON
+  // Per LiveAvatar docs: "send many small byte packets"
+  const MAX_CHUNK_SIZE = 30000; // ~30KB PCM per chunk (~0.6 seconds)
   
-  // Truncate audio if too large (HeyGen doesn't support chunked audio)
-  if (pcmBuffer.byteLength > MAX_PCM_SIZE) {
-    log.warn("[AVATAR] Audio too large, truncating to fit single message", { 
-      originalSize: pcmBuffer.byteLength,
-      truncatedSize: MAX_PCM_SIZE,
-      originalDurationSec: (pcmBuffer.byteLength / 48000).toFixed(1),
-      truncatedDurationSec: "1.0"
-    });
-    pcmBuffer = pcmBuffer.slice(0, MAX_PCM_SIZE);
-  }
-
-  // Convert to base64
-  const base64Audio = arrayBufferToBase64(pcmBuffer);
+  const totalChunks = Math.ceil(pcmBuffer.byteLength / MAX_CHUNK_SIZE);
   
-  // Debug: Log first few bytes to verify format
-  const firstBytes = new Uint8Array(pcmBuffer.slice(0, 16));
-  log.debug("[AVATAR] PCM data preview (first 16 bytes)", {
-    bytes: Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')
-  });
-  
-  log.info("[AVATAR] Sending audio", { 
-    pcmSize: pcmBuffer.byteLength,
-    pcmSizeKB: (pcmBuffer.byteLength / 1024).toFixed(2) + "KB",
-    base64Length: base64Audio.length,
+  log.info("[AVATAR] Preparing to send audio", { 
+    totalSize: pcmBuffer.byteLength,
+    totalSizeKB: (pcmBuffer.byteLength / 1024).toFixed(2) + "KB",
+    totalChunks,
     estimatedDurationSec: (pcmBuffer.byteLength / 48000).toFixed(1)
   });
 
-  // Send as single message
+  // Send audio in small chunks as recommended by LiveAvatar docs
+  for (let i = 0; i < pcmBuffer.byteLength; i += MAX_CHUNK_SIZE) {
+    const chunkEnd = Math.min(i + MAX_CHUNK_SIZE, pcmBuffer.byteLength);
+    const chunk = pcmBuffer.slice(i, chunkEnd);
+    const chunkNum = Math.floor(i / MAX_CHUNK_SIZE) + 1;
+    
+    // Convert chunk to base64
+    const base64Chunk = arrayBufferToBase64(chunk);
+    
+    log.debug(`[AVATAR] Sending chunk ${chunkNum}/${totalChunks}`, {
+      chunkSize: chunk.byteLength,
+      base64Length: base64Chunk.length
+    });
+    
+    await sendEvent(room, {
+      type: "agent.speak",
+      audio: base64Chunk,
+      event_id: eventId,
+    });
+    
+    // Small delay between chunks to avoid overwhelming the connection
+    if (chunkNum < totalChunks) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  }
+
+  // Signal end of speaking - REQUIRED per LiveAvatar docs
   await sendEvent(room, {
-    type: "agent.speak",
-    audio: base64Audio,
+    type: "agent.speak_end",
     event_id: eventId,
   });
-
-  // Note: agent.stop_listening will be called after this by the caller
-  // Don't send agent.speak_end - the workflow uses agent.stop_listening instead
 
   log.info("[AVATAR] Audio sent successfully", { eventId });
 }

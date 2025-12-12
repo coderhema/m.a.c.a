@@ -38,7 +38,7 @@ export default function CustomModeCallControls({
     resetConversation,
   } = useVoiceChat({
     room,
-    voice: "Idera", // YarnGPT voice for Nigerian languages
+    voice: "21m00Tcm4TlvDq8ikWAM", // ElevenLabs Rachel voice
     onTranscriptionStart: () => updateStatus("Transcribing..."),
     onTranscriptionComplete: (text) => {
       log.info("[UI] Transcript received", { text });

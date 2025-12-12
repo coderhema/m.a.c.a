@@ -23,7 +23,7 @@ interface Message {
 export function useVoiceChat(options: VoiceChatOptions) {
   const {
     room,
-    voice = "Idera",
+    voice = "lucy",
     onTranscriptionStart,
     onTranscriptionComplete,
     onLLMStart,
@@ -138,7 +138,7 @@ export function useVoiceChat(options: VoiceChatOptions) {
         const finalHistory = [...updatedHistory, newAssistantMessage];
         setConversationHistory(finalHistory);
 
-        // Step 3: Text-to-Speech (YarnGPT)
+        // Step 3: Text-to-Speech (ElevenLabs)
         log.info("[3/4] TTS: Converting to speech with ElevenLabs...", {
           textLength: llmResponse.length,
           voice
@@ -178,17 +178,18 @@ export function useVoiceChat(options: VoiceChatOptions) {
         log.info("[4/4] AVATAR: Sending audio to LiveAvatar...");
         const avatarStartTime = Date.now();
         
-        // Signal avatar to start listening RIGHT BEFORE sending audio
+        // Optional: Signal avatar to start listening (shows listening animation)
         log.info("[4/4] AVATAR: Signaling start listening...");
         await startAvatarListening(room);
         
-        // Send the audio
+        // Send the audio (ElevenLabs returns raw PCM 24kHz)
         await sendAudioToAvatar(room, audioResponseBlob, {
-          format: "pcm",
+          format: "pcm", // ElevenLabs returns raw PCM 16-bit 24kHz
           sampleRate: 24000,
         });
         
-        // Signal avatar to stop listening AFTER audio is sent
+        // Optional: Signal avatar to stop listening (return to idle)
+        // Note: This is optional per docs, but helps with animation state
         log.info("[4/4] AVATAR: Signaling stop listening...");
         await stopAvatarListening(room);
         

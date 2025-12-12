@@ -92,7 +92,7 @@ export default function HealthDashboard() {
             onDisconnect={handleSessionStopped}
           >
             <BottomControls 
-              variant="custom"
+              variant="livekit"
               onTranscript={setCurrentTranscript}
               onResponse={setCurrentResponse}
             />
@@ -120,6 +120,7 @@ export default function HealthDashboard() {
 
         {sessionData ? (
           <div className="w-full max-w-lg mx-auto space-y-3 mb-32">
+            {/* Chat bubbles hidden for now
             {currentTranscript && (
               <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
                 <p className="text-xs text-blue-300 font-medium mb-1">You said:</p>
@@ -132,6 +133,7 @@ export default function HealthDashboard() {
                 <p className="text-sm text-white">{currentResponse}</p>
               </div>
             )}
+            */}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center w-full h-full pointer-events-auto">

@@ -1,23 +1,16 @@
 import { NextResponse } from "next/server";
 
 // ElevenLabs TTS API
-// Default voice: Rachel (21m00Tcm4TlvDq8ikWAM) - clear, professional
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
+
+// Default voice ID (Rachel - clear female voice)
+const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 
 interface TTSRequest {
   text: string;
   voice?: string;
+  language?: string;
 }
-
-// ElevenLabs voice IDs
-const VOICE_IDS: Record<string, string> = {
-  rachel: "21m00Tcm4TlvDq8ikWAM",
-  adam: "pNInz6obpgDQGcFmaJgB",
-  antoni: "ErXwobaYiN019PkySvjV",
-  bella: "EXAVITQu4vr4xnSDxMaL",
-  elli: "MF3mGyEYCl7XYWbV9V6O",
-  josh: "TxGEqnHWrfWFTfGW9XjX",
-};
 
 export async function POST(request: Request) {
   try {
@@ -31,7 +24,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { text, voice = "rachel" }: TTSRequest = await request.json();
+    const { text, voice = DEFAULT_VOICE_ID }: TTSRequest = await request.json();
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -40,26 +33,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Truncate if too long (ElevenLabs has limits)
-    const truncatedText = text.length > 2500 ? text.substring(0, 2500) : text;
-
-    const voiceId = VOICE_IDS[voice.toLowerCase()] || VOICE_IDS.rachel;
+    // Truncate if too long
+    const truncatedText = text.length > 2000 ? text.substring(0, 2000) : text;
 
     console.log("TTS: Processing with ElevenLabs", {
       textLength: truncatedText.length,
-      voice: voice,
-      voiceId: voiceId,
+      voice,
     });
 
-    const response = await fetch(`${ELEVENLABS_API_URL}/${voiceId}?output_format=pcm_24000`, {
+    const response = await fetch(`${ELEVENLABS_API_URL}/${voice}`, {
       method: "POST",
       headers: {
         "xi-api-key": apiKey,
         "Content-Type": "application/json",
+        "Accept": "audio/pcm",
       },
       body: JSON.stringify({
         text: truncatedText,
         model_id: "eleven_multilingual_v2",
+        output_format: "pcm_24000", // PCM 16-bit 24kHz - exactly what LiveAvatar needs!
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.75,
@@ -85,6 +77,7 @@ export async function POST(request: Request) {
       audioSizeKB: (audioBuffer.byteLength / 1024).toFixed(2) + "KB",
     });
 
+    // ElevenLabs returns PCM 24kHz directly - no resampling needed!
     return new NextResponse(audioBuffer, {
       headers: {
         "Content-Type": "audio/pcm",

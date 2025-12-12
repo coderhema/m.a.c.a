@@ -20,7 +20,7 @@ export function VoiceChatExample() {
     resetConversation,
   } = useVoiceChat({
     room,
-    voice: "Idera", // You can change this to any YarnGPT voice
+    voice: "21m00Tcm4TlvDq8ikWAM", // ElevenLabs Rachel voice
     onTranscriptionStart: () => setStatus("Transcribing..."),
     onTranscriptionComplete: (text) => {
       setCurrentTranscript(text);
