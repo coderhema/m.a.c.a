@@ -41,10 +41,10 @@ const AvatarVideoRenderer: React.FC = () => {
   }
 
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 rounded-2xl overflow-hidden">
       <VideoTrack
         trackRef={avatarVideoTrack}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover rounded-2xl"
       />
     </div>
   );
