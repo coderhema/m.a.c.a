@@ -5,6 +5,7 @@ import { useSession } from "@/lib/liveavatar";
 import { useVoiceChat } from "@/lib/liveavatar";
 import { useTextChat } from "@/lib/liveavatar";
 import { useAvatarActions } from "@/lib/liveavatar";
+import { log } from "@/lib/logger";
 
 const Button: React.FC<{
   onClick: () => void;
@@ -74,12 +75,14 @@ export const LiveAvatarSession: React.FC<{
     let timeoutId: NodeJS.Timeout;
     
     if (sessionState === "disconnected") {
+      log.warn("Session disconnected, cleaning up");
       timeoutId = setTimeout(() => {
         onSessionStopped();
       }, 0);
     }
     
     if (sessionState === "error") {
+      log.error("Session error occurred");
       timeoutId = setTimeout(() => {
         onSessionStopped();
       }, 0);
@@ -97,9 +100,10 @@ export const LiveAvatarSession: React.FC<{
     if (isStreamReady && videoRef.current) {
       timeoutId = setTimeout(() => {
         try {
+          log.debug("Attaching video element to stream");
           attachElement(videoRef.current!);
         } catch (err) {
-          console.error("Failed to attach video element:", err);
+          log.error("Failed to attach video element", err);
         }
       }, 0);
     }
@@ -119,8 +123,9 @@ export const LiveAvatarSession: React.FC<{
     // 3. The session is fully initialized (not just exists)
     if (sessionState === "inactive" && !sessionInitializing && sessionInitialized) {
       timeoutId = setTimeout(() => {
+        log.info("Component triggering session start");
         startSession().catch((err: unknown) => {
-          console.error("Failed to start session:", err);
+          log.error("Failed to start session from component", err);
           onSessionStopped();
         });
       }, 100); // Small delay to ensure session is properly initialized
@@ -136,6 +141,7 @@ export const LiveAvatarSession: React.FC<{
     
     setIsSending(true);
     try {
+      log.info("User sending message", { message });
       // Add user message to chat history
       setChatHistory(prev => [...prev, { role: "user", content: message }]);
       
@@ -145,8 +151,9 @@ export const LiveAvatarSession: React.FC<{
       // setChatHistory(prev => [...prev, { role: "assistant", content: response }]);
       
       setMessage("");
+      log.info("Message sent successfully");
     } catch (error) {
-      console.error("Failed to send message:", error);
+      log.error("Failed to send message", error);
     } finally {
       setIsSending(false);
     }
@@ -157,10 +164,12 @@ export const LiveAvatarSession: React.FC<{
     
     setIsSending(true);
     try {
+      log.info("User requesting repeat", { message });
       await repeat(message);
       setMessage("");
+      log.info("Repeat action completed");
     } catch (error) {
-      console.error("Failed to repeat message:", error);
+      log.error("Failed to repeat message", error);
     } finally {
       setIsSending(false);
     }
@@ -169,19 +178,23 @@ export const LiveAvatarSession: React.FC<{
   const handleVoiceChatToggle = async () => {
     try {
       if (isVoiceChatActive) {
+        log.info("User toggling voice chat off");
         await stopVoiceChat();
       } else {
+        log.info("User toggling voice chat on");
         await startVoiceChat();
       }
     } catch (error) {
-      console.error("Failed to toggle voice chat:", error);
+      log.error("Failed to toggle voice chat", error);
     }
   };
 
   const handleMuteToggle = () => {
     if (isMuted) {
+      log.debug("User unmuting");
       unmute();
     } else {
+      log.debug("User muting");
       mute();
     }
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { Room } from "livekit-client";
+import { log } from "@/lib/logger";
 
 /**
  * In CUSTOM mode, you send audio to the avatar and it generates video.
@@ -28,6 +29,7 @@ export async function sendAudioToAvatar(
     sampleRate?: number;
   } = {}
 ): Promise<void> {
+  log.debug("Sending audio to avatar", { format: options.format, sampleRate: options.sampleRate });
   let base64Audio: string;
 
   // Convert audio data to base64
@@ -52,6 +54,7 @@ export async function sendAudioToAvatar(
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(message));
   await room.localParticipant?.publishData(data, { reliable: true });
+  log.debug("Audio sent successfully", { dataSize: data.length });
 }
 
 /**
@@ -79,6 +82,7 @@ export async function sendTextAsAudio(
   ttsEndpoint: string
 ): Promise<void> {
   try {
+    log.info("Converting text to audio", { text, ttsEndpoint });
     // Call your TTS service
     const response = await fetch(ttsEndpoint, {
       method: "POST",
@@ -89,13 +93,16 @@ export async function sendTextAsAudio(
     });
 
     if (!response.ok) {
+      log.error("TTS request failed", undefined, { status: response.status });
       throw new Error(`TTS request failed: ${response.status}`);
     }
 
     const audioBlob = await response.blob();
+    log.debug("TTS audio received, sending to avatar", { blobSize: audioBlob.size });
     await sendAudioToAvatar(room, audioBlob);
+    log.info("Text converted and sent as audio successfully");
   } catch (error) {
-    console.error("Failed to send text as audio:", error);
+    log.error("Failed to send text as audio", error);
     throw error;
   }
 }
@@ -115,6 +122,7 @@ export class MicrophoneAudioSender {
 
   async start(): Promise<void> {
     try {
+      log.info("Starting microphone audio capture");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       this.mediaRecorder = new MediaRecorder(stream, {
@@ -126,20 +134,23 @@ export class MicrophoneAudioSender {
           this.audioChunks.push(event.data);
           
           // Send audio chunk to avatar
+          log.debug("Sending microphone audio chunk", { size: event.data.size });
           await sendAudioToAvatar(this.room, event.data);
         }
       };
 
       // Capture audio in small chunks for real-time processing
       this.mediaRecorder.start(100); // Capture every 100ms
+      log.info("Microphone audio capture started");
     } catch (error) {
-      console.error("Failed to start microphone:", error);
+      log.error("Failed to start microphone", error);
       throw error;
     }
   }
 
   stop(): void {
     if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+      log.info("Stopping microphone audio capture");
       this.mediaRecorder.stop();
       this.mediaRecorder.stream.getTracks().forEach((track) => track.stop());
     }

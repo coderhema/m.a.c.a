@@ -2,6 +2,7 @@
 
 import { PiMicrophoneSlash, PiMicrophone, PiVideoCamera, PiCameraRotate, PiPhoneX, PiHandPalm, PiWaveSine } from "react-icons/pi";
 import { useVoiceChat, useAvatarActions, useSession } from "@/lib/liveavatar";
+import { log } from "@/lib/logger";
 
 export default function CallControls() {
   const { isActive, isMuted, start, stop, mute, unmute } = useVoiceChat();
@@ -10,16 +11,20 @@ export default function CallControls() {
 
   const handleVoiceChatToggle = () => {
     if (isActive) {
+      log.info("User stopping voice chat via controls");
       stop();
     } else {
+      log.info("User starting voice chat via controls");
       start();
     }
   };
 
   const handleMuteToggle = () => {
     if (isMuted) {
+      log.debug("User unmuting via controls");
       unmute();
     } else {
+      log.debug("User muting via controls");
       mute();
     }
   };

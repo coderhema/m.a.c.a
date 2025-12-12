@@ -49,6 +49,9 @@ export interface LiveAvatarSession {
   // Voice chat methods
   startVoiceChat(): Promise<void>;
   stopVoiceChat(): Promise<void>;
+  
+  // Text chat methods
+  sendText(message: string): Promise<void>;
 }
 
 // Session states as strings since the exact enum values are not accessible

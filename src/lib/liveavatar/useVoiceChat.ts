@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLiveAvatarContext } from "./context";
+import { log } from "@/lib/logger";
 
 export const useVoiceChat = () => {
   const { session } = useLiveAvatarContext();
@@ -20,25 +21,27 @@ export const useVoiceChat = () => {
     const handleVoiceChatActive = (active: boolean) => setIsActive(active);
 
     // Set up event listeners
-    session.on("avatar_talking" as any, handleAvatarTalking);
-    session.on("user_talking" as any, handleUserTalking);
-    session.on("muted" as any, handleMuted);
-    session.on("voice_chat_active" as any, handleVoiceChatActive);
+    session.on("avatar_talking", handleAvatarTalking);
+    session.on("user_talking", handleUserTalking);
+    session.on("muted", handleMuted);
+    session.on("voice_chat_active", handleVoiceChatActive);
 
     return () => {
-      session.off("avatar_talking" as any, handleAvatarTalking);
-      session.off("user_talking" as any, handleUserTalking);
-      session.off("muted" as any, handleMuted);
-      session.off("voice_chat_active" as any, handleVoiceChatActive);
+      session.off("avatar_talking", handleAvatarTalking);
+      session.off("user_talking", handleUserTalking);
+      session.off("muted", handleMuted);
+      session.off("voice_chat_active", handleVoiceChatActive);
     };
   }, [session]);
 
   const start = useCallback(async () => {
     setIsLoading(true);
     try {
-      await (session as any)?.startVoiceChat();
+      log.info("Starting voice chat");
+      await session?.startVoiceChat();
+      log.info("Voice chat started successfully");
     } catch (error) {
-      console.error("Failed to start voice chat:", error);
+      log.error("Failed to start voice chat", error);
     } finally {
       setIsLoading(false);
     }
@@ -46,9 +49,11 @@ export const useVoiceChat = () => {
 
   const stop = useCallback(async () => {
     try {
-      await (session as any)?.stopVoiceChat();
+      log.info("Stopping voice chat");
+      await session?.stopVoiceChat();
+      log.info("Voice chat stopped successfully");
     } catch (error) {
-      console.error("Failed to stop voice chat:", error);
+      log.error("Failed to stop voice chat", error);
     }
   }, [session]);
 

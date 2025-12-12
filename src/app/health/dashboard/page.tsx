@@ -1,31 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/app/components";
 import { BottomControls } from "@/app/components";
-import { LiveAvatarSession } from "@/app/components";
-import { LiveAvatarContextProvider } from "@/lib/liveavatar";
+import { LiveKitAvatarSession } from "@/components/LiveKitAvatarSession";
+
+interface SessionData {
+  session_id: string;
+  session_token: string;
+  livekit_url: string;
+  livekit_client_token: string;
+}
 
 export default function HealthDashboard() {
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [envError, setEnvError] = useState<string | null>(null);
-
-  // Check for required environment variables on component mount
-  useEffect(() => {
-    const checkEnvVariables = () => {
-      const requiredVars = ['HEYGEN_API_KEY', 'HEYGEN_AVATAR_ID'];
-      const missingVars = requiredVars.filter(varName => !process.env[varName]);
-      
-      if (missingVars.length > 0) {
-        setEnvError(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env file.`);
-      }
-    };
-
-    // Since we're in a client component, we can't access process.env directly
-    // We'll rely on the server-side validation in the API route
-  }, []);
 
   const handleStartSession = async () => {
     setLoading(true);
@@ -41,14 +31,14 @@ export default function HealthDashboard() {
         throw new Error(errorData.error || `Failed to start session: ${res.status} ${res.statusText}`);
       }
       
-      const data = await res.json();
+      const data: SessionData = await res.json();
       
-      // Validate that we received a token
-      if (!data.token) {
-        throw new Error("Invalid response from server - missing session token");
+      // Validate that we received LiveKit credentials
+      if (!data.livekit_url || !data.livekit_client_token) {
+        throw new Error("Invalid response from server - missing LiveKit credentials");
       }
       
-      setSessionToken(data.token);
+      setSessionData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
@@ -57,58 +47,52 @@ export default function HealthDashboard() {
   };
 
   const handleSessionStopped = () => {
-    setSessionToken(null);
+    setSessionData(null);
   };
 
   return (
-    <LiveAvatarContextProvider sessionAccessToken={sessionToken}>
-      <div className="relative flex flex-col h-full w-full md:max-w-full md:mx-0 max-w-md mx-auto bg-black overflow-hidden shadow-2xl">
-        {/* Video Feed Background */}
-        <div className="absolute inset-0 z-0 bg-gray-900">
-          {/* Gradient Overlay for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90 pointer-events-none"></div>
-        </div>
-
-        <Header />
-
-        {/* Middle Section */}
-        <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-start md:justify-center">
-          {envError && (
-            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white">
-              <p>Configuration Error: {envError}</p>
-              <p className="mt-2 text-sm">Please ensure your .env file is properly configured with HEYGEN_API_KEY and HEYGEN_AVATAR_ID.</p>
-            </div>
-          )}
-          
-          {error && (
-            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white">
-              <p>Error: {error}</p>
-            </div>
-          )}
-          
-          {sessionToken ? (
-            <LiveAvatarSession
-              mode="FULL"
-              onSessionStopped={handleSessionStopped}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center w-full h-full">
-              <button
-                onClick={handleStartSession}
-                disabled={loading}
-                className="bg-primary hover:bg-primary/90 text-black font-bold py-4 px-8 rounded-full transition-all transform hover:scale-105 mb-4 disabled:opacity-50"
-              >
-                {loading ? "Connecting..." : "Talk to AI Doctor"}
-              </button>
-              <p className="text-gray-400 text-center max-w-md">
-                Connect with our AI medical professional for consultation and advice
-              </p>
-            </div>
-          )}
-        </div>
-
-        <BottomControls />
+    <div className="relative flex flex-col h-full w-full md:max-w-full md:mx-0 max-w-md mx-auto bg-black overflow-hidden shadow-2xl">
+      {/* Video Feed Background */}
+      <div className="absolute inset-0 z-0 bg-gray-900">
+        {/* Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90 pointer-events-none"></div>
       </div>
-    </LiveAvatarContextProvider>
+
+      <Header />
+
+      {/* Middle Section */}
+      <div className="flex-1 relative z-10 flex flex-col justify-end pb-4 px-4 md:px-8 md:pb-8 md:items-start md:justify-center">
+        {error && (
+          <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4 text-white">
+            <p>Error: {error}</p>
+          </div>
+        )}
+        
+        {sessionData ? (
+          <div className="w-full h-full">
+            <LiveKitAvatarSession
+              livekitUrl={sessionData.livekit_url}
+              token={sessionData.livekit_client_token}
+              onDisconnect={handleSessionStopped}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center w-full h-full">
+            <button
+              onClick={handleStartSession}
+              disabled={loading}
+              className="bg-primary hover:bg-primary/90 text-black font-bold py-4 px-8 rounded-full transition-all transform hover:scale-105 mb-4 disabled:opacity-50"
+            >
+              {loading ? "Connecting..." : "Talk to AI Doctor"}
+            </button>
+            <p className="text-gray-400 text-center max-w-md">
+              Connect with our AI medical professional for consultation and advice
+            </p>
+          </div>
+        )}
+      </div>
+
+      <BottomControls />
+    </div>
   );
 }

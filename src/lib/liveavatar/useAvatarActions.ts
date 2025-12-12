@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useLiveAvatarContext } from "./context";
+import { log } from "@/lib/logger";
 
 export const useAvatarActions = (mode: "FULL" | "CUSTOM") => {
   const { session } = useLiveAvatarContext();
@@ -13,8 +14,10 @@ export const useAvatarActions = (mode: "FULL" | "CUSTOM") => {
   const repeat = useCallback(
     async (message: string) => {
       if (mode === "FULL") {
+        log.debug("Repeating message in FULL mode", { message });
         return session?.repeat(message);
       } else if (mode === "CUSTOM") {
+        log.debug("Repeating message in CUSTOM mode using TTS", { message });
         const res = await fetch("/api/elevenlabs-text-to-speech", {
           method: "POST",
           body: JSON.stringify({ text: message }),
@@ -22,9 +25,12 @@ export const useAvatarActions = (mode: "FULL" | "CUSTOM") => {
         const { audio } = await res.json();
         // Play audio directly instead of trying to pass it to HeyGen session
         if (audio) {
+          log.debug("Playing TTS audio");
           const audioUrl = `data:audio/mp3;base64,${audio}`;
           const audioElement = new Audio(audioUrl);
           audioElement.play();
+        } else {
+          log.warn("No audio received from TTS API");
         }
       }
     },
