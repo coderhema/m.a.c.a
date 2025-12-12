@@ -1,6 +1,11 @@
 import CallControls from "./CallControls";
+import LiveKitCallControls from "./LiveKitCallControls";
 
-export default function BottomControls() {
+interface BottomControlsProps {
+  variant?: "liveavatar" | "livekit";
+}
+
+export default function BottomControls({ variant = "liveavatar" }: BottomControlsProps) {
   return (
     <>
       {/* Bottom Controls Section */}
@@ -8,7 +13,7 @@ export default function BottomControls() {
         {/* Drag Handle (Mobile Only) */}
         <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 md:hidden"></div>
         
-        <CallControls />
+        {variant === "livekit" ? <LiveKitCallControls /> : <CallControls />}
       </div>
     </>
   );

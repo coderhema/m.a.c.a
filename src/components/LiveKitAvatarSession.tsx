@@ -9,6 +9,7 @@ interface LiveKitAvatarSessionProps {
   livekitUrl: string;
   token: string;
   onDisconnect?: () => void;
+  children?: React.ReactNode;
 }
 
 // Custom video renderer to display avatar video
@@ -49,6 +50,7 @@ export const LiveKitAvatarSession: React.FC<LiveKitAvatarSessionProps> = ({
   livekitUrl,
   token,
   onDisconnect,
+  children,
 }) => {
   const [isConnected, setIsConnected] = useState(false);
 
@@ -87,6 +89,8 @@ export const LiveKitAvatarSession: React.FC<LiveKitAvatarSessionProps> = ({
           </div>
         </div>
       )}
+      
+      {children}
     </LiveKitRoom>
   );
 };

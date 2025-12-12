@@ -74,7 +74,9 @@ export default function HealthDashboard() {
               livekitUrl={sessionData.livekit_url}
               token={sessionData.livekit_client_token}
               onDisconnect={handleSessionStopped}
-            />
+            >
+              <BottomControls variant="livekit" />
+            </LiveKitAvatarSession>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center w-full h-full">
@@ -91,8 +93,6 @@ export default function HealthDashboard() {
           </div>
         )}
       </div>
-
-      <BottomControls />
     </div>
   );
 }
