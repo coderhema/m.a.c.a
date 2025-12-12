@@ -1,6 +1,10 @@
 import { PiArrowLeft, PiDotsThree, PiWifiHigh } from "react-icons/pi";
 
-export default function Header() {
+interface HeaderProps {
+  callDuration?: string;
+}
+
+export default function Header({ callDuration = "00:00" }: HeaderProps) {
   return (
     <>
       {/* Top Header / Status Bar */}
@@ -21,7 +25,7 @@ export default function Header() {
                   Dr. Sarah AI
                 </h3>
                 <p className="text-gray-400 text-xs font-normal">
-                  General Practitioner • 04:23
+                  General Practitioner • {callDuration}
                 </p>
               </div>
             </div>
