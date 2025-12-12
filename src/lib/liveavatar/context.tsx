@@ -6,6 +6,7 @@ import { LiveAvatarSession } from "./types";
 interface LiveAvatarContextType {
   session: LiveAvatarSession | null;
   sessionInitializing: boolean;
+  sessionInitialized: boolean;
 }
 
 const LiveAvatarContext = createContext<LiveAvatarContextType | undefined>(undefined);
@@ -16,8 +17,12 @@ export const LiveAvatarContextProvider: React.FC<{
 }> = ({ children, sessionAccessToken }) => {
   const [session, setSession] = useState<LiveAvatarSession | null>(null);
   const [sessionInitializing, setSessionInitializing] = useState(false);
+  const [sessionInitialized, setSessionInitialized] = useState(false);
 
   useEffect(() => {
+    // Reset session initialized flag when token changes
+    setSessionInitialized(false);
+    
     // Clean up any existing session
     setSession(prevSession => {
       if (prevSession) {
@@ -47,9 +52,11 @@ export const LiveAvatarContextProvider: React.FC<{
         const LiveAvatarSessionClass = liveAvatarModule.LiveAvatarSession;
         const newSession = new LiveAvatarSessionClass(sessionAccessToken);
         setSession(newSession as unknown as LiveAvatarSession);
+        setSessionInitialized(true);
       } catch (error) {
         console.error("Failed to initialize LiveAvatarSession:", error);
         setSession(null);
+        setSessionInitialized(false);
       } finally {
         setSessionInitializing(false);
       }
@@ -71,11 +78,12 @@ export const LiveAvatarContextProvider: React.FC<{
         return null;
       });
       setSessionInitializing(false);
+      setSessionInitialized(false);
     };
   }, [sessionAccessToken]);
 
   return (
-    <LiveAvatarContext.Provider value={{ session, sessionInitializing }}>
+    <LiveAvatarContext.Provider value={{ session, sessionInitializing, sessionInitialized }}>
       {children}
     </LiveAvatarContext.Provider>
   );

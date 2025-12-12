@@ -5,7 +5,7 @@ import { useLiveAvatarContext } from "./context";
 import { LiveAvatarSession, SessionState } from "./types";
 
 export const useSession = () => {
-  const { session, sessionInitializing } = useLiveAvatarContext();
+  const { session, sessionInitializing, sessionInitialized } = useLiveAvatarContext();
   const [sessionState, setSessionState] = useState<SessionState>("inactive");
   const [isStreamReady, setIsStreamReady] = useState(false);
   const [connectionQuality, setConnectionQuality] = useState<string>("unknown");
@@ -56,7 +56,7 @@ export const useSession = () => {
       console.error("Failed to start session:", error);
       throw error;
     }
-  }, [session, sessionInitializing]);
+  }, [session, sessionInitializing, sessionInitialized]);
 
   const stopSession = useCallback(async () => {
     if (!session) {
@@ -104,5 +104,8 @@ export const useSession = () => {
     keepAlive,
     attachElement,
     sessionInitializing,
+    sessionInitialized,
+    // Expose session existence for components to check
+    sessionExists: !!session,
   };
 };

@@ -37,11 +37,17 @@ export default function HealthDashboard() {
       });
       
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to start session");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to start session: ${res.status} ${res.statusText}`);
       }
       
       const data = await res.json();
+      
+      // Validate that we received a token
+      if (!data.token) {
+        throw new Error("Invalid response from server - missing session token");
+      }
+      
       setSessionToken(data.token);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
