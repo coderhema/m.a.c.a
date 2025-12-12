@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@heygen/liveavatar-web-sdk": "^0.0.9",
+    "@livekit/components-react": "^2.9.17",
+    "@livekit/components-styles": "^1.2.0",
+    "livekit-client": "^2.16.1",
     "next": "16.0.8",
     "react": "19.2.1",
     "react-dom": "19.2.1",

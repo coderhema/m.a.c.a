@@ -1,6 +1,6 @@
 # MACA - Medical AI Conversational Assistant
 
-A Next.js 16 application featuring a conversational AI doctor powered by HeyGen's LiveAvatar technology.
+A Next.js 16 application featuring a conversational AI doctor powered by LiveAvatar.com technology with LiveKit integration.
 
 ## Features
 
@@ -15,6 +15,8 @@ A Next.js 16 application featuring a conversational AI doctor powered by HeyGen'
 - React 19
 - Tailwind CSS v4
 - react-icons
+- LiveKit Client SDK
+- LiveKit React Components
 
 ## Prerequisites
 
@@ -22,10 +24,11 @@ Before running this application, you'll need:
 
 1. Node.js (version 18 or higher)
 2. PNPM package manager
-3. HeyGen API credentials:
-   - HEYGEN_API_KEY
-   - HEYGEN_AVATAR_ID
-   - (Optional) HEYGEN_VOICE_ID
+3. LiveAvatar API credentials:
+   - LIVEAVATAR_API_KEY (from https://docs.liveavatar.com/)
+   - LIVEAVATAR_AVATAR_ID
+   - LIVEAVATAR_VOICE_ID
+   - LIVEAVATAR_CONTEXT_ID
 
 ## Setup Instructions
 
@@ -40,15 +43,16 @@ Before running this application, you'll need:
    pnpm install
    ```
 
-3. Create a `.env` file in the root directory:
+3. Create a `.env.local` file in the root directory:
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
    
-4. Configure your HeyGen credentials in the `.env` file:
-   - Sign up at [HeyGen](https://www.heygen.com/) to get your API key
-   - Create or select an avatar in your HeyGen dashboard to get the AVATAR_ID
-   - (Optional) Select a voice to get the VOICE_ID
+4. Configure your LiveAvatar credentials in the `.env.local` file:
+   - Sign up at [LiveAvatar](https://www.liveavatar.com/) to get your API key
+   - Find your API key on the LiveAvatar settings page
+   - Get your Avatar ID, Voice ID, and Context ID from the LiveAvatar dashboard
+   - See the [Quick Start Guide](https://docs.liveavatar.com/docs/quick-start-guide) for more details
 
 5. Start the development server:
    ```bash
@@ -61,9 +65,10 @@ Before running this application, you'll need:
 
 The application requires the following environment variables:
 
-- `HEYGEN_API_KEY`: Your HeyGen API key for authentication
-- `HEYGEN_AVATAR_ID`: The ID of the avatar you want to use
-- `HEYGEN_VOICE_ID`: (Optional) The ID of the voice you want to use
+- `LIVEAVATAR_API_KEY`: Your LiveAvatar API key for authentication
+- `LIVEAVATAR_AVATAR_ID`: The ID of the avatar you want to use
+- `LIVEAVATAR_VOICE_ID`: The ID of the voice you want to use
+- `LIVEAVATAR_CONTEXT_ID`: The context/persona ID for your avatar
 
 See `.env.example` for a template.
 
@@ -74,13 +79,24 @@ See `.env.example` for a template.
 - `pnpm start`: Start the production server
 - `pnpm lint`: Run ESLint
 
-## HeyGen Integration
+## LiveAvatar Integration
 
-This application uses HeyGen's LiveAvatar SDK to create real-time conversational experiences with AI avatars. The integration includes:
+This application uses LiveAvatar.com's API with LiveKit for real-time conversational experiences with AI avatars. The integration includes:
 
-- Secure session token generation via HeyGen's API
-- Real-time video streaming with WebRTC
+- Secure session token generation via LiveAvatar's API
+- Real-time video streaming with LiveKit (WebRTC)
 - Voice and text interaction capabilities
 - Session lifecycle management
 
-For more information about HeyGen's LiveAvatar SDK, visit [HeyGen Documentation](https://docs.heygen.com/).
+The integration follows a two-step process:
+1. Create a session token with avatar configuration
+2. Start the session to get LiveKit room credentials
+3. Connect to the LiveKit room for real-time communication
+
+For more information, visit:
+- [LiveAvatar Quick Start Guide](https://docs.liveavatar.com/docs/quick-start-guide)
+- [LiveKit Documentation](https://docs.livekit.io/)
+
+## Demo Page
+
+Visit `/liveavatar-demo` to test the LiveAvatar integration with a simple interface.
