@@ -145,7 +145,7 @@ export default function HealthDashboard() {
               {loading ? "Connecting..." : "Talk to M.A.C.A."}
             </button>
             <p className="text-gray-400 text-center max-w-md">
-              Connect with our AI medical professional for consultation and advice
+              Connect with our AI Health Practitioner for consultation and advice
             </p>
           </div>
         )}

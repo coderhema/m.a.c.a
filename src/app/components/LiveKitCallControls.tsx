@@ -10,32 +10,32 @@ export default function LiveKitCallControls() {
 
   const handleVoiceChatToggle = () => {
     if (isActive) {
-      stop();
+      // If active, mute/unmute instead of stopping
+      if (isMuted) {
+        unmute();
+      } else {
+        mute();
+      }
     } else {
       start();
     }
   };
 
-  const handleMuteToggle = () => {
-    if (isMuted) {
-      unmute();
-    } else {
-      mute();
-    }
-  };
+  // Mute toggle is now handled in voice chat toggle
+  // const handleMuteToggle removed - functionality merged
 
   return (
     <>
       {/* Call Controls */}
       <div className="flex items-center justify-between px-2 pt-2 md:justify-center md:gap-8 md:bg-black/40 md:backdrop-blur-xl md:p-3 md:rounded-full md:border md:border-white/10 md:w-fit md:mx-auto">
         
-        {/* Voice Chat Toggle */}
+        {/* Voice Chat Toggle - also handles mute when active */}
         <button 
           onClick={handleVoiceChatToggle}
           className="flex flex-col items-center gap-1 group"
         >
-          <div className={`flex items-center justify-center size-14 rounded-full ${isActive ? 'bg-primary text-black' : 'bg-white/10 text-white'} group-hover:bg-white/20 transition-all active:scale-95`}>
-            {isActive ? (
+          <div className={`flex items-center justify-center size-14 rounded-full ${isActive && !isMuted ? 'bg-primary text-black' : 'bg-white/10 text-white'} group-hover:bg-white/20 transition-all active:scale-95`}>
+            {isActive && !isMuted ? (
               <PiMicrophone 
                 className="text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -47,28 +47,9 @@ export default function LiveKitCallControls() {
               />
             )}
           </div>
-          <span className="text-[10px] text-gray-400 font-medium md:hidden">{isActive ? "On" : "Off"}</span>
-        </button>
-
-        {/* Mute Toggle (Only if active) */}
-         <button 
-           onClick={handleMuteToggle}
-           className={`flex flex-col items-center gap-1 group ${!isActive ? 'opacity-50 pointer-events-none' : ''}`}
-         >
-          <div className="flex items-center justify-center size-14 rounded-full bg-white/10 group-hover:bg-white/20 text-white transition-all active:scale-95">
-            {isMuted ? (
-              <PiMicrophoneSlash
-                className="text-[28px]"
-                style={{ fontVariationSettings: "'FILL' 0" }}
-              />
-            ) : (
-              <PiMicrophone
-                className="text-[28px]"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              />
-            )}
-          </div>
-          <span className="text-[10px] text-gray-400 font-medium md:hidden">Mute</span>
+          <span className="text-[10px] text-gray-400 font-medium md:hidden">
+            {!isActive ? "Off" : isMuted ? "Muted" : "On"}
+          </span>
         </button>
 
 

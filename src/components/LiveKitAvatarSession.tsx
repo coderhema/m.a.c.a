@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { LiveKitRoom, VideoTrack, RoomAudioRenderer, useParticipants, useTracks, TrackReference } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
@@ -10,7 +10,75 @@ interface LiveKitAvatarSessionProps {
   token: string;
   onDisconnect?: () => void;
   children?: React.ReactNode;
+  showSelfView?: boolean;
 }
+
+// Self-view camera component - shows user's own camera feed
+const SelfViewCamera: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasCamera, setHasCamera] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: 320, height: 240 },
+          audio: false,
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setHasCamera(true);
+        }
+      } catch (err) {
+        console.log("Camera not available for self-view:", err);
+        setHasCamera(false);
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  if (!hasCamera) return null;
+
+  return (
+    <div
+      className={`absolute z-40 transition-all duration-300 ${
+        isMinimized
+          ? "top-4 right-4 w-12 h-12"
+          : "top-4 right-4 w-24 h-18 md:w-28 md:h-20"
+      }`}
+    >
+      <div
+        className="relative w-full h-full rounded-lg overflow-hidden border-2 border-white/40 shadow-xl cursor-pointer bg-black"
+        onClick={() => setIsMinimized(!isMinimized)}
+      >
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+          style={{ transform: "scaleX(-1)" }}
+        />
+        {/* Label */}
+        {!isMinimized && (
+          <div className="absolute bottom-0.5 left-0.5 bg-black/70 px-1 py-0.5 rounded text-[8px] text-white">
+            You
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Custom video renderer to display avatar video
 const AvatarVideoRenderer: React.FC = () => {
@@ -55,6 +123,7 @@ export const LiveKitAvatarSession: React.FC<LiveKitAvatarSessionProps> = ({
   token,
   onDisconnect,
   children,
+  showSelfView = true,
 }) => {
   const [isConnected, setIsConnected] = useState(false);
 
@@ -83,6 +152,9 @@ export const LiveKitAvatarSession: React.FC<LiveKitAvatarSessionProps> = ({
       
       {/* Custom avatar video renderer */}
       <AvatarVideoRenderer />
+      
+      {/* Self-view camera (picture-in-picture) */}
+      {showSelfView && <SelfViewCamera />}
       
       {/* Connection status overlay */}
       {!isConnected && (
