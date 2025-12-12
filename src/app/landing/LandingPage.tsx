@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PiList, PiX, PiArrowUpRight, PiLeaf, PiHeartbeat, PiChartLine, PiVideoCamera, PiBrain } from "react-icons/pi";
+import { PiList, PiX, PiArrowUpRight, PiLeaf, PiHeartbeat, PiChartLine, PiVideoCamera, PiBrain, PiEnvelope, PiCheckCircle, PiClock } from "react-icons/pi";
 import Link from "next/link";
 
 // --- CSS-based MonitoringGauge Component ---
@@ -66,8 +66,13 @@ function MonitoringCard() {
           </Link>
         </div>
         
-        <div className="flex-shrink-0 bg-gray-800/50 p-4 rounded-2xl border border-gray-700">
-          <MonitoringGauge />
+        <div className="flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-3xl border border-primary/30 shadow-lg shadow-primary/10 relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary/5 rounded-3xl" />
+          <div className="absolute -top-8 -right-8 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
+          <div className="relative z-10">
+            <MonitoringGauge />
+          </div>
+          <p className="text-xs text-gray-400 text-center mt-2 relative z-10">Health Score</p>
         </div>
       </div>
     </div>
@@ -146,17 +151,6 @@ function HeroContent() {
             Get Started
           </button>
         </Link>
-        <div className="flex items-center gap-4">
-          <div className="flex -space-x-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="w-10 h-10 rounded-full border-2 border-gray-800 bg-gray-600" />
-            ))}
-          </div>
-          <div className="text-left">
-            <span className="block text-xl font-bold text-white leading-none">200+</span>
-            <span className="text-xs text-gray-400 font-medium">Hospitals and Clinics</span>
-          </div>
-        </div>
       </div>
 
       <MonitoringCard />
@@ -230,9 +224,9 @@ function HeroVisuals() {
       <div className="pl-2 sm:pl-4 text-center sm:text-left mt-auto">
         <div className="flex flex-col sm:flex-row items-center gap-6 justify-between border-t border-gray-800 pt-8">
           <p className="text-gray-400 text-lg font-medium leading-relaxed max-w-md text-left">
-            Helping medical teams provide better care with <span className="text-white font-semibold">advanced AI and 24/7 monitoring.</span>
+            Your personal AI health assistant with <span className="text-white font-semibold">video consultations, voice chat, and visual analysis.</span>
           </p>
-          <a href="#" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all bg-primary/10 px-6 py-3 rounded-full hover:bg-primary/20 whitespace-nowrap">
+          <a href="#solutions" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all bg-primary/10 px-6 py-3 rounded-full hover:bg-primary/20 whitespace-nowrap">
             Learn More <PiArrowUpRight size={18} />
           </a>
         </div>
@@ -241,33 +235,83 @@ function HeroVisuals() {
   );
 }
 
-// --- Solutions Section with Stacked Cards ---
+// --- Solutions Section with Scroll-Stacking Cards ---
 const solutions = [
   {
-    icon: <PiBrain size={32} />,
-    title: "AI Health Consultations",
-    description: "Get instant, accurate health guidance powered by advanced AI that understands your symptoms and medical history.",
+    icon: <PiVideoCamera size={40} />,
+    title: "AI Avatar Video Consultations",
+    description: "Talk face-to-face with our AI-powered health avatar. Get real-time health guidance through natural video conversations with an intelligent virtual assistant that listens, understands, and responds.",
     color: "from-emerald-500 to-emerald-700",
+    bgColor: "bg-gradient-to-br from-gray-900 to-emerald-950",
   },
   {
-    icon: <PiHeartbeat size={32} />,
-    title: "Real-time Patient Monitoring",
-    description: "Continuous vital signs tracking with instant alerts for healthcare providers when anomalies are detected.",
+    icon: <PiBrain size={40} />,
+    title: "Voice & Text Health Chat",
+    description: "Communicate with our AI health assistant using voice or text. Describe your symptoms naturally, ask health questions, and receive personalized guidance powered by advanced language models.",
     color: "from-blue-500 to-blue-700",
+    bgColor: "bg-gradient-to-br from-gray-900 to-blue-950",
   },
   {
-    icon: <PiChartLine size={32} />,
-    title: "Medical Analytics & Insights",
-    description: "Transform patient data into actionable insights with powerful analytics dashboards and predictive models.",
+    icon: <PiHeartbeat size={40} />,
+    title: "Visual Health Analysis",
+    description: "Use your camera to show symptoms visually. Our AI vision technology can analyze visible health concerns and provide relevant guidance, making remote consultations more effective.",
     color: "from-purple-500 to-purple-700",
+    bgColor: "bg-gradient-to-br from-gray-900 to-purple-950",
   },
   {
-    icon: <PiVideoCamera size={32} />,
-    title: "Telemedicine Integration",
-    description: "Seamless video consultations with integrated health records and AI-assisted diagnosis support.",
+    icon: <PiChartLine size={40} />,
+    title: "24/7 Instant Access",
+    description: "Get health guidance anytime, anywhere. No appointments needed - just open the app and start a conversation. Our AI assistant is always available to help you understand your health concerns.",
     color: "from-orange-500 to-orange-700",
+    bgColor: "bg-gradient-to-br from-gray-900 to-orange-950",
   },
 ];
+
+function SolutionCard({ solution, index }: { solution: typeof solutions[0]; index: number }) {
+  return (
+    <div
+      className="sticky"
+      style={{
+        top: `${80 + index * 40}px`,
+      }}
+    >
+      <div
+        className={`
+          relative overflow-hidden
+          ${solution.bgColor}
+          rounded-3xl p-8 md:p-12
+          shadow-xl
+          h-[260px] md:h-[280px]
+        `}
+        style={{
+          transform: `scale(${1 - index * 0.015})`,
+        }}
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10 h-full">
+          {/* Icon */}
+          <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${solution.color} text-white shrink-0 self-start`}>
+            {solution.icon}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1">
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+              {solution.title}
+            </h3>
+            <p className="text-gray-400 leading-relaxed">
+              {solution.description}
+            </p>
+            
+            {/* CTA */}
+            <button className="mt-5 inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all cursor-pointer">
+              Learn more <PiArrowUpRight size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Solutions() {
   return (
@@ -281,51 +325,15 @@ function Solutions() {
         </p>
       </div>
 
-      {/* Stacked Cards Container */}
-      <div className="relative flex justify-center items-center min-h-[500px]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+      {/* Scroll-Stacking Cards Container */}
+      <div className="relative">
+        <div className="flex flex-col gap-8">
           {solutions.map((solution, index) => (
-            <div
-              key={index}
-              className="group relative"
-              style={{
-                transform: `translateY(${index * 4}px)`,
-                zIndex: solutions.length - index,
-              }}
-            >
-              <div
-                className={`
-                  relative bg-gray-900 border border-gray-800 rounded-3xl p-8
-                  transition-all duration-500 ease-out
-                  hover:scale-105 hover:-translate-y-2 hover:z-50
-                  hover:shadow-2xl hover:shadow-primary/20
-                  group-hover:border-primary/50
-                `}
-              >
-                {/* Gradient accent */}
-                <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-3xl bg-gradient-to-r ${solution.color}`} />
-                
-                {/* Icon */}
-                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${solution.color} text-white mb-6`}>
-                  {solution.icon}
-                </div>
-
-                {/* Content */}
-                <h3 className="text-xl font-bold text-white mb-3">
-                  {solution.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {solution.description}
-                </p>
-
-                {/* Hover arrow */}
-                <div className="mt-6 flex items-center gap-2 text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  Learn more <PiArrowUpRight size={18} />
-                </div>
-              </div>
-            </div>
+            <SolutionCard key={index} solution={solution} index={index} />
           ))}
         </div>
+        {/* Spacer to allow last card to be scrolled fully */}
+        <div className="h-[100px]" />
       </div>
     </section>
   );
@@ -334,7 +342,7 @@ function Solutions() {
 // --- Hero Component ---
 function Hero() {
   return (
-    <div className="pt-6 sm:pt-10 lg:pt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-stretch">
+    <div id="home" className="pt-6 sm:pt-10 lg:pt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-stretch">
       {/* Left Content Column */}
       <div className="flex flex-col justify-center">
         <HeroContent />
@@ -348,13 +356,204 @@ function Hero() {
   );
 }
 
+// --- Technologies Section ---
+const technologies = [
+  { name: "Next.js 14", category: "Framework", status: "active", description: "React framework for production" },
+  { name: "React 19", category: "UI Library", status: "active", description: "Component-based user interfaces" },
+  { name: "TypeScript", category: "Language", status: "active", description: "Type-safe JavaScript" },
+  { name: "Tailwind CSS", category: "Styling", status: "active", description: "Utility-first CSS framework" },
+  { name: "LiveKit", category: "Real-time", status: "active", description: "WebRTC video/audio infrastructure" },
+  { name: "HeyGen Avatar", category: "AI Avatar", status: "active", description: "AI-powered video avatars" },
+  { name: "Gemini AI", category: "LLM", status: "active", description: "Google's multimodal AI model" },
+  { name: "ElevenLabs", category: "TTS", status: "active", description: "AI voice synthesis" },
+  { name: "Zod", category: "Validation", status: "active", description: "TypeScript-first schema validation" },
+  { name: "Patient Records", category: "Feature", status: "pending", description: "Electronic health records" },
+  { name: "Multi-language", category: "Feature", status: "pending", description: "Internationalization support" },
+  { name: "Mobile App", category: "Platform", status: "pending", description: "iOS & Android applications" },
+];
+
+function Technologies() {
+  const activeTech = technologies.filter(t => t.status === "active");
+  const pendingTech = technologies.filter(t => t.status === "pending");
+
+  return (
+    <section id="technology" className="py-20 lg:py-32">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+          Our <span className="text-primary">Technology</span>
+        </h2>
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          Built with modern, reliable technologies for performance and scalability
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Active Technologies */}
+        <div className="bg-gray-900/50 rounded-3xl p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <PiCheckCircle className="text-primary" size={24} />
+            <h3 className="text-xl font-bold text-white">Active Technologies</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm">Technology</th>
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm hidden sm:table-cell">Category</th>
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeTech.map((tech, index) => (
+                  <tr key={index} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                    <td className="py-4 px-2">
+                      <div className="font-medium text-white">{tech.name}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{tech.description}</div>
+                    </td>
+                    <td className="py-4 px-2 hidden sm:table-cell">
+                      <span className="text-gray-400 text-sm">{tech.category}</span>
+                    </td>
+                    <td className="py-4 px-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Active
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pending Technologies */}
+        <div className="bg-gray-900/50 rounded-3xl p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <PiClock className="text-orange-400" size={24} />
+            <h3 className="text-xl font-bold text-white">Coming Soon</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm">Feature</th>
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm hidden sm:table-cell">Category</th>
+                  <th className="text-left py-3 px-2 text-gray-400 font-medium text-sm">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingTech.map((tech, index) => (
+                  <tr key={index} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                    <td className="py-4 px-2">
+                      <div className="font-medium text-white">{tech.name}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{tech.description}</div>
+                    </td>
+                    <td className="py-4 px-2 hidden sm:table-cell">
+                      <span className="text-gray-400 text-sm">{tech.category}</span>
+                    </td>
+                    <td className="py-4 px-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                        Pending
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* CTA for pending */}
+          <div className="mt-6 p-4 bg-gray-800/50 rounded-xl">
+            <p className="text-gray-400 text-sm">
+              Interested in these features? <a href="#contact" className="text-primary font-medium hover:underline">Contact us</a> to learn more about our roadmap.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Contact Section ---
+function Contact() {
+  return (
+    <section id="contact" className="py-20 lg:py-32">
+      <div className="max-w-3xl mx-auto text-center">
+        <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+          Get In <span className="text-primary">Touch</span>
+        </h2>
+        <p className="text-gray-400 text-lg mb-12">
+          Have questions or want to learn more about MACA? We would love to hear from you.
+        </p>
+
+        {/* Contact Card */}
+        <div className="bg-gray-900/50 rounded-3xl p-8 md:p-12">
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+              <PiEnvelope className="text-primary" size={40} />
+            </div>
+            
+            <div>
+              <p className="text-gray-400 mb-2">Reach out via email</p>
+              <a 
+                href="mailto:olugbemiopedepo@gmail.com"
+                className="text-2xl md:text-3xl font-bold text-white hover:text-primary transition-colors break-all"
+              >
+                olugbemiopedepo@gmail.com
+              </a>
+            </div>
+
+            <a 
+              href="mailto:olugbemiopedepo@gmail.com"
+              className="mt-4 inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-black px-8 py-3 rounded-full font-medium transition-colors"
+            >
+              <PiEnvelope size={20} />
+              Send Email
+            </a>
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <p className="mt-12 text-gray-500 text-sm">
+          We typically respond within 24-48 hours
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// --- Footer ---
+function Footer() {
+  return (
+    <footer className="py-8 border-t border-gray-800">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <PiLeaf className="text-black" size={18} />
+          </div>
+          <span className="font-bold text-white">MACA</span>
+        </div>
+        <p className="text-gray-500 text-sm">
+          © {new Date().getFullYear()} Nexa-V. All rights reserved.
+        </p>
+        <div className="flex items-center gap-6">
+          <a href="#home" className="text-gray-400 hover:text-white text-sm transition-colors">Home</a>
+          <a href="#solutions" className="text-gray-400 hover:text-white text-sm transition-colors">Solutions</a>
+          <a href="#technology" className="text-gray-400 hover:text-white text-sm transition-colors">Technology</a>
+          <a href="#contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 // --- Navbar Component ---
 const navLinks = [
-  { label: "Home", href: "#" },
+  { label: "Home", href: "#home" },
   { label: "Solutions", href: "#solutions" },
-  { label: "Technology", href: "#" },
-  { label: "Hospitals", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Technology", href: "#technology" },
+  { label: "Contact", href: "#contact" },
 ];
 
 function Navbar() {
@@ -434,6 +633,9 @@ export default function LandingPage() {
         <Navbar />
         <Hero />
         <Solutions />
+        <Technologies />
+        <Contact />
+        <Footer />
       </div>
     </div>
   );

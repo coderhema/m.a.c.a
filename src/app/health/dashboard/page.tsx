@@ -82,7 +82,7 @@ export default function HealthDashboard() {
   }, []);
 
   return (
-    <div className="relative flex flex-col h-full w-full md:max-w-full md:mx-0 max-w-md mx-auto bg-black overflow-hidden shadow-2xl">
+    <div className="relative flex flex-col h-screen w-full md:max-w-full md:mx-0 max-w-md mx-auto bg-black overflow-hidden shadow-2xl">
       {/* Video Feed Background */}
       <div className="absolute inset-0 z-0 bg-gray-900">
         {sessionData && (
