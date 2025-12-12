@@ -14,13 +14,6 @@ export default function HealthPage() {
           >
             Start Consultation
           </button>
-          
-          <button 
-            className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-full transition-all backdrop-blur-md border border-white/10"
-            onClick={() => window.location.href = '/health/video-call'}
-          >
-            Video Call
-          </button>
         </div>
       </div>
     </div>
