@@ -1,4 +1,4 @@
-# MACA - Medical AI Conversational Assistant
+# MACA - Multimodal Assistant for Clinical Analysis
 
 A Next.js 16 application featuring a conversational AI doctor powered by LiveAvatar.com technology with LiveKit integration.
 
